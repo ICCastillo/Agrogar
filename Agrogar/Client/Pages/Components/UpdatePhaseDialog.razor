@@ -1,0 +1,46 @@
+﻿@inject IDataStorageService dataStorageService
+@inject IPropertyService propertyService
+
+
+<MudDialog>
+    <DialogContent>
+		<MudSelect T="WorkPhase" Label="Fase de trabajo" @bind-Value="phase">
+			@foreach (var workPhase in workPhases)
+			{
+				<MudSelectItem Value="@workPhase">@workPhase.Name</MudSelectItem>
+			}
+		</MudSelect>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancelar</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Aceptar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+	[CascadingParameter] 
+	MudDialogInstance MudDialog { get; set; }
+	List<WorkPhase> workPhases { get; set; }
+	WorkPhase phase;
+	int propertyId { get; set; }
+
+	protected override void OnInitialized()
+	{
+		workPhases = dataStorageService.WorkPhasesAndTasks.Keys.ToList();
+		propertyId = dataStorageService.PropertyId;
+	}
+
+	async void Submit()
+	{
+		var property = dataStorageService.DetailViewProperties.Find(p => p.Id.Equals(propertyId));
+		var response = await propertyService.UpdateProperty(property.Id, phase.Id);
+		var resultMessage = response.Message;
+
+		dataStorageService.SetWorkPhaseToProperty(propertyId,phase);
+		dataStorageService.NotifyStateChanged();
+		MudDialog.Close(DialogResult.Ok(phase));
+		
+	}
+
+	void Cancel() => MudDialog.Cancel();
+}

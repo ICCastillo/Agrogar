@@ -1,0 +1,25 @@
+﻿@page "/"
+@inject NavigationManager navigationManager
+@inject IDataService dataService
+@inject IDataStorageService dataStorageService
+@inject ICadasterService cadasterService
+
+
+    <AuthorizeView>
+        <NotAuthorized>
+            @{
+            navigationManager.NavigateTo("/login");
+            }
+        </NotAuthorized>
+        <Authorized>
+            @{
+            navigationManager.NavigateTo("/propiedades");
+            }
+        </Authorized>
+    </AuthorizeView>
+
+
+@code{
+ 
+}
+

@@ -1,0 +1,58 @@
+﻿@inject ILocalStorageService localStorageService
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject NavigationManager navigationManager
+@attribute [Authorize]
+
+<AuthorizeView>
+	<Authorized>
+		<MudPaper Elevation="25">
+			<MudToolBar Style="background-color: #0d6efd;height: 50px;">
+				
+						<MudImage Src="images/home.png" Style="width: 35px; height:auto; cursor: pointer;margin-left: 40px" @onclick="NavigateToProperties"></MudImage>
+					
+					<MudSpacer />
+
+				<MudImage Src="images/logo.png" Style="width: 150px; height:auto;margin-left: 100px;"></MudImage>
+					
+					<MudSpacer />
+
+				<MudImage Src="images/land.png" Style="width: 40px; height:auto; cursor: pointer;margin-right: 40px;" @onclick="NavigateToMyProperties"></MudImage>
+				<MudImage Src="images/tools.png" Style="width: 35px; height:auto; cursor: pointer;margin-right: 40px;" @onclick="NavigateToMyWorks"></MudImage>
+						<MudMenu>
+							<ActivatorContent>
+								<MudImage Src="images/user.png" Style=" width: 35px; height:auto; margin-right: 40px;"></MudImage>
+							</ActivatorContent>
+							<ChildContent>
+								<MudMenuItem OnClick="Logout">Cerrar Sesión</MudMenuItem>
+							</ChildContent>
+						</MudMenu>
+			
+			</MudToolBar>
+		</MudPaper>
+	</Authorized>
+</AuthorizeView>
+
+
+@code {
+	private MudTheme Theme = new MudTheme();
+
+	private async void Logout()
+	{
+		await localStorageService.RemoveItemAsync("authToken");
+		await authenticationStateProvider.GetAuthenticationStateAsync();
+		navigationManager.NavigateTo("/");
+	}
+
+	private void NavigateToMyWorks()
+	{
+		navigationManager.NavigateTo("/usuario/trabajos");
+	}
+	private void NavigateToMyProperties()
+	{
+		navigationManager.NavigateTo("/usuario/propiedades");
+	}
+	private void NavigateToProperties()
+	{
+		navigationManager.NavigateTo("/propiedades");
+	}
+}

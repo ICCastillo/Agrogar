@@ -1,0 +1,175 @@
+﻿@inject IJSRuntime JSRuntime
+@inject ICadasterService cadasterService
+@inject IDialogService dialogService
+@inject IDataStorageService dataStorageService
+@inject ISnackbar snackBar
+
+<style>
+	.bevel {
+		-webkit-clip-path: polygon(20% 0%, 80% 0%, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0% 80%, 0% 20%);
+		clip-path: polygon(20% 0%, 80% 0%, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0% 80%, 0% 20%);
+	}
+
+	.centered {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+</style>
+
+<div class="container">
+	<div class="row">
+		<div class="col-6">
+			<MudCard Style="background-color: rgba(255, 255, 255, 0.75);backdrop-filter: blur(20px);">
+				<MudCardHeader>
+					<CardHeaderAvatar>
+						<div class="bevel" style="@innerStyle">
+							<div class="bevel" style="@outerStyle">
+							</div>
+						</div>
+					</CardHeaderAvatar>
+					<CardHeaderContent>
+						<MudText Typo="Typo.body1">@property.Province</MudText>
+						<MudText Typo="Typo.body2">@property.Municipality</MudText>
+					</CardHeaderContent>
+					<CardHeaderActions>
+						<MudText Typo="Typo.body1">@property.Crop</MudText>
+					</CardHeaderActions>
+				</MudCardHeader>
+				<MudCardContent>
+					<div id="map" style="height:400px;width:500px">
+					</div>
+				</MudCardContent>
+				<div class="centered">
+					<MudCardActions>
+						<div>
+							<div class="mb-3" style="width: 200px">
+								<MudSelect T="WorkDTO" Label="Trabajos" AnchorOrigin="Origin.BottomCenter" ValueChanged="SelectWork" AdornmentAriaLabel="LOL" Disabled="IsSelectedDisabled">
+									@foreach (var work in works)
+									{
+										<MudSelectItem T="WorkDTO" Value="@work">@work.TaskType.Name</MudSelectItem>
+									}
+								</MudSelect>
+							</div>
+							<div style="margin-left:40px">
+								@if (selectedOption == null)
+								{
+									IsDialogDisabled = true;
+								}
+								<MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="OpenAssignmentApplyDialog" Disabled="IsDialogDisabled">Inscribirse</MudButton>
+							</div>
+						</div>
+
+					</MudCardActions>
+				</div>
+			</MudCard>
+		</div>
+		<div class="col-6">
+		</div>
+	</div>
+</div>
+
+
+
+@code {
+	[CascadingParameter(Name = "Property")]
+	public PropertyDTO property { get; set; }
+	[CascadingParameter(Name = "Works")]
+	public IEnumerable<WorkDTO>? works { get; set; }
+	[CascadingParameter(Name = "UserId")]
+	public int UserId { get; set; }
+	WorkDTO selectedOption { get; set; }
+	private CadasterData cadasterData;
+	bool IsDialogDisabled { get; set; }
+	bool IsSelectedDisabled { get; set; }
+	string innerStyle;
+	string outerStyle;
+
+	protected override async Task OnParametersSetAsync()
+	{
+		dataStorageService.OnChange += StateHasChanged;
+		if (property.UserId == UserId)
+		{
+			IsSelectedDisabled = true;
+		}
+
+		SetAvatarColor(property.Category.Id);
+		if (works.Count() > 0)
+		{
+			dataStorageService.AssignmentApplyWorkDTOs = works;
+			IsDialogDisabled = false;
+		}
+		else
+		{
+			IsDialogDisabled = true;
+		}
+		foreach (var work in works)
+		{
+			foreach (var assignment in work.Assignments)
+			{
+				if (!assignment.IsAvailable)
+				{
+					IsDialogDisabled = true;
+					IsSelectedDisabled = true;
+				}
+			}
+		}
+	}
+
+	private void Dispose()
+	{
+		dataStorageService.OnChange -= StateHasChanged;
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+
+			var cadasterDataResponse = await cadasterService.GetCadasterData(property.Province, property.Municipality, property.CadasterReference);
+			cadasterData = cadasterDataResponse;
+			var jsInProcess = (IJSInProcessRuntime)JSRuntime;
+			var value = await jsInProcess.InvokeAsync<string>("init", cadasterData.AxisY, cadasterData.AxisX, cadasterData.Address);
+			StateHasChanged();
+		}
+	}
+
+	private void SelectWork(WorkDTO work)
+	{
+		selectedOption = work;
+		IsDialogDisabled = false;
+		StateHasChanged();
+	}
+
+	private void OpenAssignmentApplyDialog()
+	{
+		dataStorageService.WorkDTO = selectedOption;
+		dataStorageService.UserId = UserId;
+		DialogOptions closeOnEscapeKey = new DialogOptions() { CloseOnEscapeKey = true };
+		dialogService.Show<AssignmentApplyDialog>("Solicitud trabajo", closeOnEscapeKey);
+	}
+
+	private void SetAvatarColor(int categoryId)
+	{
+		switch (categoryId)
+		{
+			case 1:
+				innerStyle = "display: flex; flex-shrink: 0; height: 70px; width: 70px; margin: 5px; background-image: linear-gradient(to bottom right, #FFEB3B, #FBC02D, #F57F17);";
+				outerStyle = "height: 60px; width: 60px; background: url(images/fields.png) no-repeat center; background-size: cover; margin: auto;";
+				break;
+			case 2:
+				innerStyle = "display: flex; flex-shrink: 0; height: 70px; width: 70px; margin: 5px; background-image: linear-gradient(to bottom right, #2196F3, #1976D2, #0D47A1);";
+				outerStyle = "height: 60px; width: 60px; background: url(images/treefield.png) no-repeat center; background-size: cover; margin: auto;";
+				break;
+			case 3:
+				innerStyle = "display: flex; flex-shrink: 0; height: 70px; width: 70px; margin: 5px; background-image: linear-gradient(to bottom right, #4CAF50, #388E3C, #1B5E20);";
+				outerStyle = "height: 60px; width: 60px; background: url(images/greenhouse.png) no-repeat center; background-size: cover; margin: auto;";
+				break;
+			case 4:
+				innerStyle = "display: flex; flex-shrink: 0; height: 70px; width: 70px; margin: 5px; background-image: linear-gradient(to bottom right, #FF5252, #E53935, #B71C1C);";
+				outerStyle = "height: 60px; width: 60px; background: url(images/warehouse.png) no-repeat center; background-size: cover; margin: auto;";
+				break;
+
+		}
+	}
+}

@@ -1,0 +1,220 @@
+﻿@inject IPropertyService propertyService
+@inject IWorkService workService
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject ICadasterService cadasterService
+@inject NavigationManager navigationManager
+@inject IDialogService dialogService
+@inject IDataStorageService dataStorageService
+@inject ISnackbar snackBar
+
+<style>
+	.pa-4 {
+		background-color: rgba(255, 255, 255, 0.75);
+		backdrop-filter: blur(20px);
+	}
+
+	.centered {
+		display: flex;
+		justify-content: center;
+		align-items: flex-start;
+	}
+</style>
+
+@if(dataStorageService.DetailViewProperties.Count() < 0)
+{
+	<div class="centered">
+		<MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+	</div>
+}
+else
+{
+	
+
+<div class="centered">
+	<MudButton OnClick="OpenPropertyRegisterDialog" Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.AddBox" Color="Color.Primary">Registrar parcela</MudButton>
+</div>
+<div class="centered" style="margin-top: 100px">
+	<MudPaper Class="pa-4">
+		<MudTable Items="@dataStorageService.DetailViewProperties" Hover="true" Breakpoint="Breakpoint.Sm" Dense="true">
+			<ColGroup>
+				<col />
+				<col />
+				<col />
+				<col />
+				<col />
+				<col style="width: 200px"/>
+				<col />
+				<col />
+				<col />
+			</ColGroup>
+			<HeaderContent>
+				<MudTh></MudTh>
+				<MudTh>Referencia Catastral</MudTh>
+				<MudTh>Categoria</MudTh>
+				<MudTh>Provincia</MudTh>
+				<MudTh>Municipio</MudTh>
+				<MudTh>Fase</MudTh>
+				<MudTh>Tipo</MudTh>
+				<MudTh>Tamaño</MudTh>
+				<MudTh>Cambiar fase</MudTh>
+			</HeaderContent>
+			<RowTemplate>
+				<MudTd><MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="@(() => ShowBtnPress(context.CadasterReference))">@((context.ShowDetails == true) ? "Ocultar" : "Mostrar") Trabajos</MudButton></MudTd>
+				<MudTd DataLabel="Referencia Catastral">@context.CadasterReference</MudTd>
+				<MudTd DataLabel="Categoria">@context.Category.Name</MudTd>
+				<MudTd DataLabel="Provincia">@context.Province</MudTd>
+				<MudTd DataLabel="Municipio">@context.Municipality</MudTd>
+				<MudTd DataLabel="Fase">@context.WorkPhase.Name</MudTd>
+				<MudTd DataLabel="Tipo">@context.Crop</MudTd>
+				<MudTd DataLabel="Tamaño">@context.Size</MudTd>
+				<MudTd DataLabel="Cambiar fase">
+					<MudButton @onclick="()=>OpenPhaseDialog(context)" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.KeyboardDoubleArrowUp" Color="Color.Info" Size="Size.Small">
+						
+					</MudButton>
+				</MudTd>
+			</RowTemplate>
+			<ChildRowContent>
+				@if (context.ShowDetails)
+				{
+					<MudTr>
+						<td colspan="4">
+							<MudCard Elevation="0">
+								<MudCardHeader>
+									<CardHeaderContent>
+										<MudText Typo="Typo.body1">
+											<MudButton @onclick="()=>OpenWorkRegisterDialog(context)" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.AddBox" Color="Color.Primary" Size="Size.Small">
+												Añadir trabajo
+											</MudButton>
+											<br/>
+										</MudText>
+										<MudText Typo="Typo.body1">
+											Detalles de  <strong>@context.Address</strong>											
+										</MudText>
+									</CardHeaderContent>
+								</MudCardHeader>
+								<MudCardContent Class="pa-0">
+									<MudTable Items="@context.Works" Context="WorksContext" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0">
+										<ColGroup>
+											<col />
+											<col />
+											<col style="width:100px;" />
+											<col />
+											<col />
+											<col style="width:100px;" />
+										</ColGroup>
+										<HeaderContent>
+											<MudTh>Tarea</MudTh>
+											<MudTh>Fecha Comienzo</MudTh>
+											<MudTh>Fecha Final</MudTh>
+											<MudTh>Detalles</MudTh>
+											<MudTh>Activo</MudTh>
+										</HeaderContent>
+										<RowTemplate>
+											<MudTd DataLabel="Tarea">@WorksContext.TaskType.Name</MudTd>
+											<MudTd DataLabel="Fecha Comienzo">@WorksContext.StartDate.ToString("dd/MM/yyyy")</MudTd>
+											<MudTd DataLabel="Fecha Final">@WorksContext.EndDate.ToString("dd/MM/yyyy")</MudTd>
+											<MudTd DataLabel="Detalles">@WorksContext.Details</MudTd>
+											<MudTd DataLabel="Activo">@WorksContext.IsActive</MudTd>
+										</RowTemplate>
+									</MudTable>
+								</MudCardContent>
+							</MudCard>
+						</td>
+					</MudTr>
+					<br/>
+				}
+			</ChildRowContent>
+		</MudTable>
+	</MudPaper>
+
+</div>
+
+}
+
+@code
+{
+	int UserId;
+
+	protected override async Task OnInitializedAsync()
+	{
+		dataStorageService.OnChange += StateHasChanged;
+		
+		var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+		var user = authState.User;
+		if (user.Identity.IsAuthenticated)
+		{
+			UserId = int.Parse(authState.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+		}
+		var propertiesResponse = await propertyService.GetPropertiesByUserId(UserId);
+		dataStorageService.DetailViewProperties = propertiesResponse.Data;
+
+		foreach (var property in dataStorageService.DetailViewProperties)
+		{
+			var cadasterData = await cadasterService.GetCadasterData(property.Province, property.Municipality, property.CadasterReference);
+			property.Address = cadasterData.Address;
+			var worksResponse = await workService.GetWorks(property.Id);
+			foreach (var work in worksResponse.Data)
+			{
+				if (work.PropertyId == property.Id)
+				{
+					property.Works.Add(work);
+				}
+			}
+		}
+	}
+
+	private void Dispose()
+	{
+		dataStorageService.OnChange -= StateHasChanged;
+	}
+
+
+	private void NavigateToPropertyRegister()
+	{
+		navigationManager.NavigateTo("/propiedad/registro");
+	}
+
+	private void ShowBtnPress(string cr)
+	{
+		PropertyDTO tmpProperty = dataStorageService.DetailViewProperties.First(f => f.CadasterReference.Equals(cr));
+		tmpProperty.ShowDetails = !tmpProperty.ShowDetails;
+	}
+
+	private void OpenPhaseDialog(PropertyDTO property)
+	{
+		bool hasActiveWorks = false;
+		var works = dataStorageService.DetailViewProperties.Find(p => p.Id.Equals(property.Id)).Works;
+		foreach(var work in works)
+		{
+			if (work.IsActive)
+			{
+				hasActiveWorks = true;
+			}
+		}
+
+		if (!hasActiveWorks)
+		{
+			dataStorageService.PropertyId = property.Id;
+			DialogOptions closeOnEscapeKey = new DialogOptions() { CloseOnEscapeKey = true };
+			dialogService.Show<UpdatePhaseDialog>("Actualizar Fase", closeOnEscapeKey);
+		}
+		else
+		{
+			snackBar.Add("La propiedad tiene trabajos activos.", Severity.Error);
+		}
+
+	}
+
+	private void OpenWorkRegisterDialog(PropertyDTO property)
+	{
+		dataStorageService.PropertyId = property.Id;
+		DialogOptions closeOnEscapeKey = new DialogOptions() { CloseOnEscapeKey = true };
+		dialogService.Show<WorkRegisterDialog>("Registrar trabajo", closeOnEscapeKey);
+	}
+
+	private void OpenPropertyRegisterDialog()
+	{
+		DialogOptions closeOnEscapeKey = new DialogOptions() { CloseOnEscapeKey = true };
+		dialogService.Show<PropertyRegisterDialog>("Registrar propiedad", closeOnEscapeKey);
+	}
+}

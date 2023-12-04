@@ -1,0 +1,22 @@
+﻿@inherits LayoutComponentBase
+
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<style>
+    body {
+        background-image: url("images/background.png");
+        background-attachment: fixed;
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+</style>
+<MudLayout>
+    <div class="nav-menu" style="position:sticky; z-index: 100;">
+        <NavMenu />
+    </div>
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+</MudLayout>

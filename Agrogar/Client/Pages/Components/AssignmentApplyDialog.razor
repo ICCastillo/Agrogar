@@ -1,0 +1,82 @@
+﻿@inject IDataStorageService dataStorageService
+@inject IAssignmentService assignmentService
+@inject IAuthService authService
+@inject ISnackbar snackbar
+
+<MudDialog>
+	<TitleContent><h3>Solicitud para @work.TaskType.Name</h3></TitleContent>
+	<DialogContent>
+		<MudSelect T="int" Label="Puesto de trabajo" AnchorOrigin="Origin.BottomCenter" Style="width: 200px" @bind-Value="SelectedOption">
+
+			@foreach (var assignment in assignments.Distinct().ToList())
+			{
+
+				<MudSelectItem Value="@assignment.Id">@assignment.JobTitle</MudSelectItem>
+			}
+		</MudSelect>
+	</DialogContent>
+	<DialogActions>
+		<MudButton OnClick="Cancel">Cancelar</MudButton>
+		<MudButton Color="Color.Primary" OnClick="Submit">Inscribirse</MudButton>
+	</DialogActions>
+</MudDialog>
+
+@code {
+	[CascadingParameter]
+	MudDialogInstance MudDialog { get; set; }
+	int UserId { get; set; }
+	WorkDTO work { get; set; } = new WorkDTO();
+	List<AssignmentDTO> assignments { get; set; } = new List<AssignmentDTO>();
+	public int SelectedOption { get; set; }
+
+
+
+
+	protected override async Task OnInitializedAsync()
+	{
+		UserId = dataStorageService.UserId;
+		work = dataStorageService.WorkDTO;
+		var userResult = await authService.GetUser(UserId);
+		var user = userResult.Data;
+
+
+		foreach (var assignment in work.Assignments)
+		{
+			if (assignment.LicensePP)
+			{
+				bool hasLicense = (user.LicensePP && assignment.LicensePP) || !assignment.LicensePP;
+				if (assignment.IsAvailable && hasLicense)
+				{
+					assignments.Add(assignment);
+				}
+			}
+			else if (assignment.IsAvailable)
+			{
+				assignments.Add(assignment);
+			}
+		}
+	}
+
+	async Task Submit()
+	{
+
+		var result = await assignmentService.Update(SelectedOption, UserId);
+		if (result.Success)
+		{
+			snackbar.Add(result.Message, Severity.Success);
+			var assignment = assignments.FirstOrDefault(a => a.Id == SelectedOption);
+			assignments.Remove(assignment);
+		}
+		else
+		{
+			snackbar.Add(result.Message, Severity.Error);
+		}
+
+		MudDialog.Close(DialogResult.Ok(true));
+		dataStorageService.StateHasChanged();
+	}
+	void Cancel() => MudDialog.Cancel();
+
+	
+
+}

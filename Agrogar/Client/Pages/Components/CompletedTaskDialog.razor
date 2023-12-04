@@ -1,0 +1,51 @@
+﻿@inject IAssignmentService assignmentService
+@inject IDataStorageService dataStorageService
+@inject ISnackbar snackbar
+
+<MudDialog Style="width:400px">
+    <DialogContent>
+        <MudNumericField @bind-Value="workedHours" Label="Horas trabajadas" Variant="Variant.Text" Min="0" />
+        <MudTextField @bind-Value="comments" Label="Comentarios" Lines="6" Variant="Variant.Text"
+                      Validation="@(new Func<string, IEnumerable<string>>(TextLength))"></MudTextField>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancelar</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Completar</MudButton>
+    </DialogActions>
+</MudDialog>
+@code {
+    [CascadingParameter] 
+    MudDialogInstance MudDialog { get; set; }
+    AssignmentDTO assignment { get; set; } = new AssignmentDTO();
+    int workedHours { get; set; } = 0;
+    string comments { get; set; } 
+
+    protected override void OnParametersSet()
+    {
+        comments = "Comentarios...";
+        assignment = dataStorageService.AssignmentDTO;
+    }
+
+    async Task Submit() 
+    {
+        var response = await assignmentService.Complete(assignment.Id,workedHours,comments);
+        if (response.Success)
+		{
+			snackbar.Add(response.Message, Severity.Success);
+		}
+		else
+		{
+			snackbar.Add(response.Message, Severity.Error);
+		}
+        MudDialog.Close(DialogResult.Ok(true)); 
+    }
+
+    void Cancel() => MudDialog.Cancel();
+
+    private IEnumerable<string> TextLength(string pw)
+    {
+        if (pw.Length < 1)
+            yield return "Debes comentar el trabajo.";
+    }
+}
+

@@ -1,0 +1,168 @@
+﻿@inject NavigationManager navigationManager
+@inject ICadasterService cadasterService
+
+<style>
+	.grand-parent-container {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.left-parent-container {
+		display: flex;
+		justify-content: flex-start;
+		margin-left: 30px;
+	}
+
+	.right-parent-container {
+		display: flex;
+		justify-content: flex-end;
+		margin-right: 30px;
+	}
+
+	.right-container {
+		display: flex;
+		flex-direction: column;
+		width: 100px;
+		height: 135px;
+	}
+
+	.left-container {
+		display: flex;
+		flex-direction: column;
+		width: 200px;
+	}
+
+	.row {
+		display: flex;
+	}
+
+		.row > div {
+			flex: 1;
+			text-align: center;
+		}
+
+	.bevel {
+		-webkit-clip-path: polygon(20% 0%, 80% 0%, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0% 80%, 0% 20%);
+		clip-path: polygon(20% 0%, 80% 0%, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0% 80%, 0% 20%);
+	}
+
+	.centered {
+		display: flex;
+		justify-content: center;
+		align-items: flex-start;
+	}
+</style>
+
+<div class="centered" @onclick="@NavigateTo" style="cursor: pointer;">
+	<MudCard Style="background-color: rgba(255, 255, 255, 0.75);backdrop-filter: blur(20px); height: 300px; width:500px;">
+		<MudCardHeader>
+			<CardHeaderAvatar>
+				<div class="bevel" style="@innerStyle">
+					<div class="bevel" style="@outerStyle">
+					</div>
+				</div>
+			</CardHeaderAvatar>
+			<CardHeaderActions>
+				<MudText Class="mt-8 mr-5" Typo="Typo.body2">@property.Province</MudText>
+				<MudText Class="mr-5" Typo="Typo.body2">@property.Municipality</MudText>
+			</CardHeaderActions>
+			<CardHeaderContent>
+				<MudText Typo="Typo.body1">@property.Crop</MudText>
+			</CardHeaderContent>
+		</MudCardHeader>
+		<MudCardContent>
+			<div class="grand-parent-container">
+				<div class="left-parent-container">
+					<div class="left-container">
+						<div class="row" style="justify-content: center;">
+							<MudText Class="mt-1 mb-3" Typo="Typo.body1">Trabajos</MudText>
+						</div>
+						<div class="row">
+							<div>
+								<h4>Fase del cultivo</h4><h5>@workPhase</h5>
+							</div>
+						</div>
+						<br/>
+						<div class="row">
+							<div>
+								<h4>Tareas</h4><h5>@assignments.ToString().Substring(0, assignments.ToString().Length - 2)</h5>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="right-parent-container">
+					<div class="right-container">
+						<div class="row" style="justify-content: center;">
+							<MudText Class="mt-1 mb-3" Typo="Typo.body1">Puestos</MudText>
+						</div>
+						<div class="row">
+							<div>
+								<img src="@farmer" style="height: 35px;" />
+							</div>
+							<div>
+								<img src="@tractor" style="height: 35px; margin-right: 3px; margin-top: 3px" />
+							</div>
+						</div>
+						<div class="row">
+							<div>
+								<img src="@worker" style="height: 35px;" />
+							</div>
+							<div>
+								<img src="@truck" style="height: 45px;" />
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</MudCardContent>
+	</MudCard>
+</div>
+
+
+
+@code {
+	[CascadingParameter]
+	public PropertyDTO property { get; set; }
+	[Parameter]
+	public string innerStyle { get; set; }
+	[Parameter]
+	public string outerStyle { get; set; }
+	string assignments = string.Empty;
+	string workPhase = string.Empty;
+	string farmer = string.Empty;
+	string worker = string.Empty;
+	string truck = string.Empty;
+	string tractor = string.Empty;
+
+	protected override void OnParametersSet()
+	{
+		workPhase = property.WorkPhase.Name;
+		assignments = string.Empty;
+		string tempTask = string.Empty;
+		foreach(var work in property.Works)
+		{
+			if (work.Assignments.Exists(a => a.JobTitle.Equals("Peón"))) { farmer = "images/farmer.png"; }
+			if (work.Assignments.Exists(a => a.JobTitle.Equals("Conductor de Tractor"))) { tractor = "images/tractor.png"; }
+			if (work.Assignments.Exists(a => a.JobTitle.Equals("Operario"))) { worker = "images/worker.png"; }
+			if (work.Assignments.Exists(a => a.JobTitle.Equals("Conductor de Camión"))) { truck = "images/truck.png"; }
+
+			if (!work.TaskType.Name.Equals(tempTask))
+			{
+				assignments += work.TaskType.Name + ", ";
+			}
+			tempTask = work.TaskType.Name;
+		}
+		if(assignments == string.Empty)
+		{
+			assignments = "No hay trabajos disponibles  ";
+		}
+	}
+
+	private void NavigateTo()
+	{
+		navigationManager.NavigateTo($"/propiedad/{property.Id}");
+	}
+
+
+}

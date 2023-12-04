@@ -1,0 +1,162 @@
+﻿@inject IWorkService workService
+@inject IDataStorageService dataStorageService
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject ISnackbar snackbar
+
+<MudDialog>
+	<DialogContent>
+		<MudSelect T="string" Label="Tarea" AnchorOrigin="Origin.BottomCenter" @bind-Value="selectedTask">
+			@foreach (var task in tasks)
+			{
+				<MudSelectItem Value="@task.Name" />
+			}
+		</MudSelect>
+		<MudSelect T="string" Label="Puestos de trabajo" MultiSelection="true" @bind-Value="selectedJob.Name" @bind-SelectedValues="selectedJobs">
+			@foreach (var job in jobs)
+			{
+				<MudSelectItem Value="@job.Name" />
+			}
+		</MudSelect>
+
+		@if (selectedJobs.Count() != 0)
+		{
+			foreach (var job in selectedJobs)
+			{
+				string label = $"Puestos para {job}";
+				<MudNumericField Value="@GetNumericFieldValue(job)" ValueChanged="(int value) => SetNumericFieldValue(job, value)" Label="@label" Variant="Variant.Text" Min="1" Max="10" />
+			}
+		}
+
+		<MudDateRangePicker @ref="picker" Label="With action buttons" @bind-DateRange="dateRange">
+			<PickerActions>
+				<MudButton Class="mr-auto align-self-start" OnClick="@(() => picker.Clear())">Clear</MudButton>
+				<MudButton OnClick="@(() => picker.Close(false))">Cancel</MudButton>
+				<MudButton Color="Color.Primary" OnClick="@(() => picker.Close())">Ok</MudButton>
+			</PickerActions>
+		</MudDateRangePicker>
+		<MudCheckBox @bind-Checked="licensePP" Label="Requiere CPF" Color="Color.Success" />
+		<MudTextField T="string" Label="Detalles" @bind-Value="workRegister.Details"></MudTextField>
+	</DialogContent>
+	<DialogActions>
+		<MudButton OnClick="Cancel">Cancelar</MudButton>
+		<MudButton Color="Color.Primary" OnClick="HandleRegistration">Aceptar</MudButton>
+	</DialogActions>
+</MudDialog>
+
+@code {
+	PropertyDTO property { get; set; }
+	int propertyId { get; set; }
+	[CascadingParameter]
+	public MudDialogInstance MudDialog { get; set; }
+	MudDateRangePicker picker;
+	DateRange dateRange = new DateRange(DateTime.Now.Date, DateTime.Now.AddDays(5).Date);
+	WorkRegisterDTO workRegister { get; set; } = new WorkRegisterDTO();
+	WorkAssignmentRegisterDTO workAssignmentRegisterDTO = new WorkAssignmentRegisterDTO();
+	List<AssignmentRegisterDTO> assignments = new List<AssignmentRegisterDTO>();
+	List<TaskType> tasks { get; set; } = new List<TaskType>();
+	List<JobTitle> jobs { get; set; } = new List<JobTitle>();
+	JobTitle selectedJob { get; set; } = new JobTitle();
+	string selectedTask { get; set; } = string.Empty;
+	IEnumerable<string> selectedJobs { get; set; } = new HashSet<string>() { };
+	Dictionary<string, int> numericFieldValues { get; set; } = new Dictionary<string, int>();
+	Dictionary<string, int> tempValues { get; set; } = new Dictionary<string, int>();
+	string details = string.Empty;
+	bool licensePP { get; set; }
+
+
+	protected override void OnInitialized()
+	{
+		propertyId = dataStorageService.PropertyId;
+		property = dataStorageService.DetailViewProperties.Find(p => p.Id.Equals(propertyId));
+		var workTasksDictionary = dataStorageService.WorkPhasesAndTasks;
+		tasks = workTasksDictionary.Where(w => w.Key.Id == property.WorkPhase.Id).Select(t => t.Value).ElementAt(0);
+		jobs = dataStorageService.JobTitles;
+
+		foreach (var job in jobs)
+		{
+			tempValues.Add(job.Name, 0);
+		}
+	}
+
+	void Cancel() => MudDialog.Cancel();
+
+	private async void HandleRegistration()
+	{
+		if(selectedJob.Name != "" && selectedTask != "")
+		{
+			workRegister.PropertyId = property.Id;
+			workRegister.TaskTypeId = tasks.Where(t => t.Name.Equals(selectedTask)).Select(t => t.Id).First();
+			workRegister.StartDate = (DateTime)dateRange.Start;
+			workRegister.EndDate = (DateTime)dateRange.End;
+			workAssignmentRegisterDTO.Work = workRegister;
+			workAssignmentRegisterDTO.Assignments = new List<AssignmentRegisterDTO>();
+			foreach (var job in selectedJobs)
+			{
+				AssignmentRegisterDTO assignment = new AssignmentRegisterDTO();
+				assignment.JobTitle = job;
+				assignment.LicensePP = licensePP;
+
+				workAssignmentRegisterDTO.Assignments.Add(assignment);
+			}
+
+			var workResult = await workService.Register(workAssignmentRegisterDTO);
+			var message = workResult.Message;
+			if (workResult.Success)
+			{
+				message = workResult.Message;
+				snackbar.Add(message, Severity.Success);
+			}
+			else
+			{
+				message = workResult.Message;
+				snackbar.Add(message, Severity.Error);
+			}
+
+			dataStorageService.SetNewWorkToProperty(propertyId, await GetAddedWork());
+			StateHasChanged();
+			MudDialog.Close(DialogResult.Ok(true));
+		}
+		else
+		{
+			snackbar.Add("Se debe elegir al menos una tarea y un puesto de trabajo.", Severity.Error);
+		}
+
+	}
+
+	private int GetNumericFieldValue(string job)
+	{
+		if (numericFieldValues.ContainsKey(job))
+		{
+			return numericFieldValues[job];
+		}
+		return 1;
+	}
+
+	private void SetNumericFieldValue(string job, int value)
+	{
+
+		if (!numericFieldValues.ContainsKey(job))
+		{
+			numericFieldValues[job] = 1;
+		}
+
+		if (tempValues[job] < value)
+		{
+			tempValues[job] = value;
+			numericFieldValues[job]++;
+		}
+		else
+		{
+			tempValues[job] = value;
+			numericFieldValues[job]--;
+		}
+
+	}
+
+	private async Task<WorkDTO> GetAddedWork()
+	{
+		var works = await workService.GetWorks(propertyId);
+		return works.Data.Last();
+	}
+
+}

@@ -1,0 +1,62 @@
+﻿@page "/propiedad/{Id:int}"
+@inject IPropertyService propertyService
+@inject IWorkService workService
+@inject IAssignmentService assignmentService
+@inject IDataService dataQueryService
+@inject AuthenticationStateProvider authenticationStateProvider
+@attribute [Authorize]
+
+
+
+@if (property == null)
+{
+	<span>@message</span>
+}
+else
+{
+	
+	<div class="centered">
+		<CascadingValue Value="property" Name="Property">
+			<CascadingValue Value="works" Name="Works">
+				<CascadingValue Value="UserId" Name="UserId">
+				<PropertyDetailView />
+				</CascadingValue>
+			</CascadingValue>
+		</CascadingValue>
+	</div>
+			
+
+
+}
+
+
+
+
+@code {
+	private PropertyDTO property;
+	private IEnumerable<WorkDTO>? works = new List<WorkDTO>();
+	private string message = string.Empty;
+	private int UserId { get; set; }
+
+	[Parameter]
+	public int Id { get; set; }
+
+	protected override async Task OnParametersSetAsync()
+	{
+		message = "Cargando propiedad";
+		var result = await propertyService.GetProperty(Id);
+		property = result.Data;
+		var worksResult = await workService.GetWorks(Id);
+		works = worksResult.Data.Where(w => w.IsActive);
+
+		var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+		var user = authState.User;
+		if (user.Identity.IsAuthenticated)
+		{
+			UserId = int.Parse(authState.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+		}
+
+	}
+
+
+}

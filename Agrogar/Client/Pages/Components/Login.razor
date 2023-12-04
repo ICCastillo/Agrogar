@@ -1,0 +1,96 @@
+﻿@inject IAuthService authService
+@inject ILocalStorageService localStorageService
+@inject NavigationManager navigationManager
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject ISnackbar snackbar
+@using System.Text.RegularExpressions
+@using System.ComponentModel.DataAnnotations
+
+<style>
+	.pa-4 {
+		background-color: rgba(255, 255, 255, 0.75);
+		backdrop-filter: blur(20px);
+	}
+
+	.centered {
+		display: flex;
+		justify-content: center;
+		align-items: flex-start;
+	}
+</style>
+<MudContainer>
+	<MudGrid>
+		<MudItem sm="4">
+		</MudItem>
+		<MudItem sm="4">
+			<MudPaper Class="pa-4 mb-1" Style="text-align:center;">
+				<h4 class="mt-2">Inicio de sesión</h4>
+			</MudPaper>
+			<MudPaper Class="pa-4">
+				<MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
+					<MudTextField T="string" Label="Email" Required="true" RequiredError="Email is required!"
+								  Validation="@(new EmailAddressAttribute() {ErrorMessage = "El correo no es valido"})" @bind-Value="@userLoginDTO.Email" />
+					<MudTextField T="string" Label="Password" HelperText="Choose a strong password" @ref="pwField1"
+								  InputType="InputType.Password"
+								  Validation="@(new Func<string, IEnumerable<string>>(PasswordStrength))" Required="true"
+								  RequiredError="Password is required!" @bind-Value="@userLoginDTO.Password" />
+					<MudTextField T="string"
+								  Label="Password" HelperText="Repeat the password" InputType="InputType.Password"
+								  Validation="@(new Func<string, string>(PasswordMatch))" />
+					<div class="mt-2" style="text-align:center">
+						<MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!success)" Class="ml-auto" @onclick="HandleLogin">Iniciar Sesión</MudButton>
+					</div>
+				</MudForm>
+				<br/>
+				<span>Si no tienes una cuenta puedes <a href="/usuario/registro" style="text-decoration: underline;">registrarte</a></span>
+			</MudPaper>
+		</MudItem>
+		<MudItem xs="4">
+		</MudItem>
+	</MudGrid>
+</MudContainer>
+@code {
+	bool success;
+	string[] errors = { };
+	string message = string.Empty;
+	MudTextField<string> pwField1;
+	MudForm form = new MudForm();
+	UserLoginDTO userLoginDTO = new UserLoginDTO();
+
+	private IEnumerable<string> PasswordStrength(string pw)
+	{
+		if (string.IsNullOrWhiteSpace(pw))
+		{
+			yield return "¡Se requiere una contraseña!";
+			yield break;
+		}
+		if (pw.Length < 8)
+			yield return "La contraseña debe tener al menos 8 caracteres";
+	}
+
+	private string PasswordMatch(string arg)
+	{
+		if (pwField1.Value != arg)
+			return "Las contraseñas no coinciden.";
+		return null;
+	}
+
+	private async Task HandleLogin()
+	{
+		var result = await authService.Login(userLoginDTO);
+		if (result.Success)
+		{
+			message = string.Empty;
+			await localStorageService.SetItemAsync("authToken", result.Data);
+			await authenticationStateProvider.GetAuthenticationStateAsync();
+			navigationManager.NavigateTo("/propiedades");
+		}
+		else
+		{
+			message = result.Message;
+			snackbar.Add(message, Severity.Error);
+		}
+		StateHasChanged();
+	}
+
+}

@@ -1,0 +1,111 @@
+﻿@page "/propiedades"
+@inject IPropertyService propertyService
+@inject IWorkService workService
+@inject IDataService dataQueryService
+@inject IDataStorageService dataStorageService
+@inject NavigationManager navigationManager
+@attribute [Authorize]
+
+
+
+@if (dataStorageService.ListViewProperties.Count == 0)
+{
+    <div class="centered">
+        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+    </div>
+}
+else
+{
+    <MudDrawer @bind-Open="@open" DisableOverlay="true" Anchor="Anchor.Right" Elevation="1" Variant="@DrawerVariant.Temporary">
+        <MudDrawerHeader>
+            <MudText Typo="Typo.h6"></MudText>
+        </MudDrawerHeader>
+        <MudNavMenu>
+            <PropertiesFilter />
+        </MudNavMenu>
+    </MudDrawer>
+    <div style=" position:fixed;">
+        <MudButton Class="ml-10" Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => ToggleDrawer())">Filtros</MudButton>
+    </div>
+    
+    @foreach (var property in dataStorageService.ListViewProperties)
+    {
+        string innerStyle = string.Empty;
+        string outerStyle = string.Empty;
+        switch (property.Category.Id)
+        {
+            case 1:
+                innerStyle = "display: flex; flex-shrink: 0; height: 70px; width: 70px; margin: 5px; background-image: linear-gradient(to bottom right, #FFEB3B, #FBC02D, #F57F17);";
+                outerStyle = "height: 60px; width: 60px; background: url(images/fields.png) no-repeat center; background-size: cover; margin: auto;";
+                break;
+            case 2:
+                innerStyle = "display: flex; flex-shrink: 0; height: 70px; width: 70px; margin: 5px; background-image: linear-gradient(to bottom right, #2196F3, #1976D2, #0D47A1);";
+                outerStyle = "height: 60px; width: 60px; background: url(images/treefield.png) no-repeat center; background-size: cover; margin: auto;";
+                break;
+            case 3:
+                innerStyle = "display: flex; flex-shrink: 0; height: 70px; width: 70px; margin: 5px; background-image: linear-gradient(to bottom right, #4CAF50, #388E3C, #1B5E20);";
+                outerStyle = "height: 60px; width: 60px; background: url(images/greenhouse.png) no-repeat center; background-size: cover; margin: auto;";
+                break;
+            case 4:
+                innerStyle = "display: flex; flex-shrink: 0; height: 70px; width: 70px; margin: 5px; background-image: linear-gradient(to bottom right, #FF5252, #E53935, #B71C1C);";
+                outerStyle = "height: 60px; width: 60px; background: url(images/warehouse.png) no-repeat center; background-size: cover; margin: auto;";
+                break;
+
+        }
+        <div class="centered mb-3">
+            <CascadingValue Value="property">
+                <PropertyListView innerStyle="@innerStyle" outerStyle="@outerStyle" />
+            </CascadingValue>
+        </div>
+    }
+  
+
+
+}
+
+@code {
+    private string message = string.Empty;
+    List<PropertyDTO> propertyList = new List<PropertyDTO>();
+    bool open;
+    List<PropertyDTO> properties = new List<PropertyDTO>();
+    bool categoryFilter { get; set; } = false;
+    string categoryValue { get; set; }
+    IEnumerable<string> categoryOptions { get; set; } = new HashSet<string>();
+    bool provinceFilter { get; set; } = false;
+    string provinceValue { get; set; }
+    IEnumerable<string> provinceOptions { get; set; } = new HashSet<string>();
+    bool municipalityFilter { get; set; } = false;
+    string municipalityValue { get; set; }
+    IEnumerable<string> municipalityOptions { get; set; } = new HashSet<string>();
+
+
+    void ToggleDrawer()
+    {
+        open = !open;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        dataStorageService.OnChange += StateHasChanged;
+        var propertiesResponse = await propertyService.GetProperties();
+        dataStorageService.ListViewProperties = propertiesResponse.Data;
+        foreach(var property in dataStorageService.ListViewProperties)
+		{
+			var worksResponse = await workService.GetWorks(property.Id);
+			property.Works = worksResponse.Data;
+		}
+    }
+
+    private void Dispose()
+    {
+        dataStorageService.OnChange -= StateHasChanged;
+    }
+
+    private List<PropertyDTO> FilterProperties<T>(IEnumerable<T> filterValues, Func<PropertyDTO, T, bool> filterCondition, List<PropertyDTO> properties)
+    {
+        return properties.Where(property => filterValues.Any(filterValue => filterCondition(property, filterValue))).ToList();
+    }
+
+
+    
+}

@@ -1,0 +1,12 @@
+﻿.div-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.num-field{
+    width: 80%;
+}
+.icon-container {
+    padding-top: 40px;
+}

@@ -1,0 +1,154 @@
+﻿@inject IPropertyService propertyService
+@inject IDataStorageService dataStorageService
+@inject AuthenticationStateProvider authenticationStateProvider
+@using System.Text.RegularExpressions
+@using System.ComponentModel.DataAnnotations
+@inject ISnackbar snackbar
+@attribute [Authorize]
+
+
+<style>
+    .pa-4 {
+        background-color: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(20px);
+    }
+
+    .centered {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+    }
+</style>
+
+
+<MudDialog>
+    <DialogContent>
+        <MudPaper Class="pa-4">
+            <MudForm Model="@property" @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
+                <MudTextField T="string" Label="Provincia" Required="true" RequiredError="La provincia es obligatoria."
+                              Validation="@(new{ErrorMessage = "La provincia es obligatoria"})" @bind-Value="@property.Province" />
+
+                <MudTextField T="string" Label="Municipio" Required="true" RequiredError="El municipio es obligatorio."
+                              Validation="@(new{ErrorMessage = "El Municipio es obligatorio"})" @bind-Value="@property.Municipality" />
+
+                <MudTextField T="string" Label="Producto agrícola" Required="true" RequiredError="Se debe registrar que producto se va a sembrar."
+                              Validation="@(new{ErrorMessage = "El producto es obligatorio"})" @bind-Value="@property.Crop" />
+
+                <MudTextField T="string" Label="Referencia Catastral" Required="true" RequiredError="La referencia catastral es obligatoria."
+                              Validation="@(new{ErrorMessage = "El Teléfono es obligatorio"})" @bind-Value="@property.CadasterReference" />
+
+                <MudNumericField T="int" Label="Tamaño en hectáreas" Required="true" RequiredError="Es obligatorio dar un tamaño"
+                                 Validation="@(new{ErrorMessage = "El Tamaño es obligatorio"})" @bind-Value="@property.Size" />
+
+                <MudGrid>
+                    <MudItem xs="6">
+                        <MudSelect T="string" Label="Tipo de parcela" AnchorOrigin="Origin.BottomCenter" @bind-Value="selectedCategory">
+                            @foreach (var category in categoryList)
+                            {
+                                <MudSelectItem Value="category.Name" />
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudSelect T="string" Label="Fase del cultivo" AnchorOrigin="Origin.BottomCenter" @bind-Value="selectedWorkPhase">
+                            @foreach (var woprkPhase in workPhaseList)
+                            {
+                                <MudSelectItem Value="woprkPhase.Name" />
+                            }
+                        </MudSelect>
+                    </MudItem>
+                </MudGrid>
+            </MudForm>
+        </MudPaper>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancelar</MudButton>
+        <MudButton Color="Color.Primary" OnClick="HandleRegistration">Aceptar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    public MudDialogInstance MudDialog { get; set; }
+    PropertyRegisterDTO property = new PropertyRegisterDTO();
+    List<WorkPhase> workPhaseList = new List<WorkPhase>();
+    List<Category> categoryList = new List<Category>();
+    int UserId;
+    string message = string.Empty;
+    string messageCssClass = string.Empty;
+    bool success;
+    string[] errors = { };
+    MudTextField<string> pwField1 = new MudTextField<string>();
+    MudForm form = new MudForm();
+    readonly Func<Category, string> converter = p => p.Id.ToString();
+    string selectedCategory { get; set; } = string.Empty;
+    string selectedWorkPhase { get; set; } = string.Empty;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        workPhaseList = dataStorageService.WorkPhasesAndTasks.Keys.ToList();
+        categoryList = dataStorageService.Categories;
+        var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity.IsAuthenticated)
+        {
+            UserId = int.Parse(authState.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+        }
+    }
+
+    async Task HandleRegistration()
+    {
+        await form.Validate();
+        if (form.IsValid)
+        {
+            PickFromSelects();
+            property.UserId = UserId;
+            var result = await propertyService.Register(property);
+            var message = result.Message;
+            if (result.Success)
+            {
+                message = result.Message;
+                snackbar.Add(message, Severity.Success);
+            }
+            else
+            {
+                message = result.Message;
+                snackbar.Add(message, Severity.Error);
+            }
+
+            var lastPropertyResult = await propertyService.GetProperties();
+            var lastProperty = lastPropertyResult.Data.Last();
+            dataStorageService.SetNewProperty(lastProperty);
+            MudDialog.Close(DialogResult.Ok(property));
+            StateHasChanged();
+        }
+        
+    }
+
+    private IEnumerable<string> PasswordStrength(string pw)
+    {
+        if (string.IsNullOrWhiteSpace(pw))
+        {
+            yield return "¡Se requiere una contraseña!";
+            yield break;
+        }
+        if (pw.Length < 8)
+            yield return "La contraseña debe tener al menos 8 caracteres";
+    }
+
+    private string PasswordMatch(string arg)
+    {
+        if (pwField1.Value != arg)
+            return "Las contraseñas no coinciden.";
+        return null;
+    }
+
+    private void PickFromSelects()
+    {
+        property.CategoryId = categoryList.FirstOrDefault(c => c.Name.Equals(selectedCategory)).Id;
+        property.WorkPhaseId = workPhaseList.FirstOrDefault(w => w.Name.Equals(selectedWorkPhase)).Id;
+    }
+
+    void Cancel() => MudDialog.Cancel();
+}

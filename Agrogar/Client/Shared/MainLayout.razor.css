@@ -1,0 +1,23 @@
+body {
+    background-image: url("/images/background.jpg");
+    background-attachment: fixed;
+    background-size: cover;
+}
+
+
+.page {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding-top: 50px;
+}
+
+
+.nav-menu {
+    overflow: hidden;
+    position: fixed;
+    position: sticky;
+    top: 0;
+}
+
+

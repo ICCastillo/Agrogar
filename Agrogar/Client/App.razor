@@ -1,0 +1,45 @@
+﻿@inject IDataService dataService
+
+<style>
+	.pa-4 {
+		background-color: rgb(220, 0, 0, 0.90);
+		backdrop-filter: blur(20px);
+	}
+</style>
+<CascadingAuthenticationState>
+	<Router AppAssembly="@typeof(App).Assembly">
+		<Found Context="routeData">
+			<AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+				<NotAuthorized>
+					<div class="centered">
+						<MudPaper Class="pa-4" Elevation="3" Style="width: 350px;">
+							<div class="centered">
+								<img src="images/notauthorized2.png" style="width: 200px; height:auto;">
+							</div>
+							<div class="centered mt-3">
+								<label style="color: white;">No tienes autorización para ver ésta página. <br /> Puedes <a href="/usuario/registro" style="color:white; border-bottom: 1px solid;">registrarte</a> o <a href="/login" style="color:white; border-bottom: 1px solid;">iniciar sesión</a></label>
+
+							</div>
+						</MudPaper>
+					</div>
+				</NotAuthorized>
+			</AuthorizeRouteView>
+			<FocusOnNavigate RouteData="@routeData" Selector="h1" />
+		</Found>
+		<NotFound>
+			<PageTitle>No se encontro</PageTitle>
+			<LayoutView Layout="@typeof(MainLayout)">
+				<p role="alert">Esta dirección no existe.</p>
+			</LayoutView>
+		</NotFound>
+	</Router>
+</CascadingAuthenticationState>
+
+@code {
+
+	protected override async Task OnInitializedAsync()
+	{
+		await dataService.FillConstantCollections();
+	}
+
+}
