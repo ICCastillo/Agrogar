@@ -29,9 +29,9 @@
 
 		<MudDateRangePicker @ref="picker" Label="With action buttons" @bind-DateRange="dateRange">
 			<PickerActions>
-				<MudButton Class="mr-auto align-self-start" OnClick="@(() => picker.Clear())">Clear</MudButton>
-				<MudButton OnClick="@(() => picker.Close(false))">Cancel</MudButton>
-				<MudButton Color="Color.Primary" OnClick="@(() => picker.Close())">Ok</MudButton>
+				<MudButton Class="mr-auto align-self-start" OnClick="@(() => picker.Clear())">Limpiar</MudButton>
+				<MudButton OnClick="@(() => picker.Close(false))">Cancelar</MudButton>
+				<MudButton Color="Color.Primary" OnClick="@(() => picker.Close())">Aceptar</MudButton>
 			</PickerActions>
 		</MudDateRangePicker>
 		<MudCheckBox @bind-Checked="licensePP" Label="Requiere CPF" Color="Color.Success" />
@@ -52,7 +52,6 @@
 	DateRange dateRange = new DateRange(DateTime.Now.Date, DateTime.Now.AddDays(5).Date);
 	WorkRegisterDTO workRegister { get; set; } = new WorkRegisterDTO();
 	WorkAssignmentRegisterDTO workAssignmentRegisterDTO = new WorkAssignmentRegisterDTO();
-	List<AssignmentRegisterDTO> assignments = new List<AssignmentRegisterDTO>();
 	List<TaskType> tasks { get; set; } = new List<TaskType>();
 	List<JobTitle> jobs { get; set; } = new List<JobTitle>();
 	JobTitle selectedJob { get; set; } = new JobTitle();
@@ -90,13 +89,17 @@
 			workRegister.EndDate = (DateTime)dateRange.End;
 			workAssignmentRegisterDTO.Work = workRegister;
 			workAssignmentRegisterDTO.Assignments = new List<AssignmentRegisterDTO>();
-			foreach (var job in selectedJobs)
+			foreach (var job in numericFieldValues.Keys)
 			{
 				AssignmentRegisterDTO assignment = new AssignmentRegisterDTO();
 				assignment.JobTitle = job;
 				assignment.LicensePP = licensePP;
+				var amountOfWorkers = numericFieldValues[job];
+				for (int i = 0; i < amountOfWorkers; i++)
+				{
+					workAssignmentRegisterDTO.Assignments.Add(assignment);
+				}
 
-				workAssignmentRegisterDTO.Assignments.Add(assignment);
 			}
 
 			var workResult = await workService.Register(workAssignmentRegisterDTO);

@@ -103,14 +103,16 @@
 		{
 			IsDialogDisabled = true;
 		}
+		IsDialogDisabled = true;
+		IsSelectedDisabled = true;
 		foreach (var work in works)
 		{
 			foreach (var assignment in work.Assignments)
 			{
-				if (!assignment.IsAvailable)
+				if (assignment.IsAvailable)
 				{
-					IsDialogDisabled = true;
-					IsSelectedDisabled = true;
+					IsDialogDisabled = false;
+					IsSelectedDisabled = false;
 				}
 			}
 		}

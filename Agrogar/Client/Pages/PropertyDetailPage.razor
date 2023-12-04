@@ -47,7 +47,7 @@ else
 		var result = await propertyService.GetProperty(Id);
 		property = result.Data;
 		var worksResult = await workService.GetWorks(Id);
-		works = worksResult.Data.Where(w => w.IsActive);
+		works = worksResult.Data.Where(w => w.IsActive).ToList();
 
 		var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
 		var user = authState.User;

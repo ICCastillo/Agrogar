@@ -15,19 +15,22 @@
 	.centered {
 		display: flex;
 		justify-content: center;
-		align-items: flex-start;
 	}
 </style>
-<MudContainer>
-	<MudGrid>
-		<MudItem sm="4">
-		</MudItem>
-		<MudItem sm="4">
-			<MudPaper Class="pa-4 mb-1" Style="text-align:center;">
+
+<div class="container">
+	<div class="row">
+		<div class="centered">
+			<MudPaper Class="pa-4 mb-1" Style="text-align:center; width:400px">
 				<h4 class="mt-2">Inicio de sesión</h4>
 			</MudPaper>
-			<MudPaper Class="pa-4">
-				<MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
+		</div>
+	</div>
+	
+	<div class="row">
+		<div class="centered">
+			<MudPaper Class="pa-4" Style="width:400px">
+				<MudForm Model="userLoginDTO" @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
 					<MudTextField T="string" Label="Email" Required="true" RequiredError="Email is required!"
 								  Validation="@(new EmailAddressAttribute() {ErrorMessage = "El correo no es valido"})" @bind-Value="@userLoginDTO.Email" />
 					<MudTextField T="string" Label="Password" HelperText="Choose a strong password" @ref="pwField1"
@@ -41,14 +44,16 @@
 						<MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!success)" Class="ml-auto" @onclick="HandleLogin">Iniciar Sesión</MudButton>
 					</div>
 				</MudForm>
-				<br/>
+				<br />
 				<span>Si no tienes una cuenta puedes <a href="/usuario/registro" style="text-decoration: underline;">registrarte</a></span>
 			</MudPaper>
-		</MudItem>
-		<MudItem xs="4">
-		</MudItem>
-	</MudGrid>
-</MudContainer>
+		</div>
+	</div>
+</div>
+
+
+
+
 @code {
 	bool success;
 	string[] errors = { };
