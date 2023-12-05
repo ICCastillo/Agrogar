@@ -71,12 +71,20 @@
 		{
 			snackbar.Add(result.Message, Severity.Error);
 		}
+		var assignmentLocalUpdate = dataStorageService.AssignmentApplyWorkDTOs
+	.Where(w => w.Id == work.Id)
+	.Select(w => w.Assignments)
+	.First()
+	.FirstOrDefault(a => a.Id == SelectedOption);
 
+		if (assignmentLocalUpdate != null)
+		{
+			assignmentLocalUpdate.IsAvailable = false;
+		}
 		MudDialog.Close(DialogResult.Ok(true));
-		dataStorageService.StateHasChanged();
 	}
 	void Cancel() => MudDialog.Cancel();
 
-	
+
 
 }

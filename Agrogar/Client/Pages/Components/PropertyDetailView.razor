@@ -3,6 +3,7 @@
 @inject IDialogService dialogService
 @inject IDataStorageService dataStorageService
 @inject ISnackbar snackBar
+@inject IWorkService workService
 
 <style>
 	.bevel {
@@ -45,7 +46,7 @@
 						<div>
 							<div class="mb-3" style="width: 200px">
 								<MudSelect T="WorkDTO" Label="Trabajos" AnchorOrigin="Origin.BottomCenter" ValueChanged="SelectWork" AdornmentAriaLabel="LOL" Disabled="IsSelectedDisabled">
-									@foreach (var work in works)
+									@foreach (var work in works.Where(w => w.Assignments.Any(a => a.IsAvailable)))
 									{
 										<MudSelectItem T="WorkDTO" Value="@work">@work.TaskType.Name</MudSelectItem>
 									}
@@ -96,7 +97,7 @@
 		SetAvatarColor(property.Category.Id);
 		if (works.Count() > 0)
 		{
-			dataStorageService.AssignmentApplyWorkDTOs = works;
+			dataStorageService.SetAssignmentApplyWorkDTOs(works);
 			IsDialogDisabled = false;
 		}
 		else
@@ -105,11 +106,13 @@
 		}
 		IsDialogDisabled = true;
 		IsSelectedDisabled = true;
-		foreach (var work in works)
+		bool userSuscribed = dataStorageService.AssignmentApplyWorkDTOs.Any(w => w.Assignments.Any(a => a.UserId == UserId));
+		foreach (var work in dataStorageService.AssignmentApplyWorkDTOs)
 		{
+			
 			foreach (var assignment in work.Assignments)
 			{
-				if (assignment.IsAvailable)
+				if (assignment.IsAvailable && !userSuscribed)
 				{
 					IsDialogDisabled = false;
 					IsSelectedDisabled = false;

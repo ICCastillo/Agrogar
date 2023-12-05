@@ -20,8 +20,9 @@
         void SetNewProperty(PropertyDTO property);
         void SetFilteredList(List<PropertyDTO> filteredList);
         void SetAssignmentToMyWorks(List<AssignmentDTO> assignments);
-        void StateHasChanged();
+        void SetAssignmentApplyWorkDTOs(IEnumerable<WorkDTO> works);
 
 
-    }
+
+	}
 }

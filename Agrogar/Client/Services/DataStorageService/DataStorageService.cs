@@ -62,7 +62,11 @@
             NotifyStateChanged();
         }
 
-        public void StateHasChanged() => NotifyStateChanged();
+        public void SetAssignmentApplyWorkDTOs(IEnumerable<WorkDTO> works)
+        {
+			AssignmentApplyWorkDTOs = works.ToList();
+			NotifyStateChanged();
+		}
 
     }
 }

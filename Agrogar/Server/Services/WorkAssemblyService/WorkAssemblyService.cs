@@ -13,13 +13,11 @@ namespace Agrogar.Server.Services.WorkBuilderService
         private readonly IWorkService _workService;
         private readonly IAssignmentService _assignmentService;
         private List<TaskType>? _taskTypes;
-        private List<JobTitle>? _jobTitles;
         private List<Work>? _rawWorks;
         private List<Assignment>? _rawAssignments;
 
-        public WorkAssemblyService(ITaskTypeService taskTypeService, IJobTitleService jobPositionService, IWorkService workService, IAssignmentService assignmentService)
+        public WorkAssemblyService(ITaskTypeService taskTypeService, IWorkService workService, IAssignmentService assignmentService)
         {
-            _jobTitleService = jobPositionService;
             _taskTypeService = taskTypeService;
             _workService = workService;
             _assignmentService = assignmentService;
@@ -71,6 +69,7 @@ namespace Agrogar.Server.Services.WorkBuilderService
 
                 var assignmentDTO = new AssignmentDTO
                 {
+                    UserId = assignment.UserId,
                     Id = assignment.Id,
                     JobTitle = assignment.JobTitle,
                     LicensePP = assignment.LicensePP,
@@ -149,9 +148,6 @@ namespace Agrogar.Server.Services.WorkBuilderService
         {
             var taskTypes = await GetTaskTypeListAsync();
             _taskTypes = taskTypes;
-
-            var jobTitles = await GetJobTitleListAsync();
-            _jobTitles = jobTitles;
         }
 
     }

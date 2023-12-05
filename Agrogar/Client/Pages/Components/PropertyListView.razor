@@ -142,10 +142,10 @@
 		string tempTask = string.Empty;
 		foreach(var work in property.Works)
 		{
-			if (work.Assignments.Exists(a => a.JobTitle.Equals("Peón"))) { farmer = "images/farmer.png"; }
-			if (work.Assignments.Exists(a => a.JobTitle.Equals("Conductor de Tractor"))) { tractor = "images/tractor.png"; }
-			if (work.Assignments.Exists(a => a.JobTitle.Equals("Operario"))) { worker = "images/worker.png"; }
-			if (work.Assignments.Exists(a => a.JobTitle.Equals("Conductor de Camión"))) { truck = "images/truck.png"; }
+			if (work.Assignments.Exists(a => a.JobTitle.Equals("Peón") && a.IsAvailable)) { farmer = "images/farmer.png"; }
+			if (work.Assignments.Exists(a => a.JobTitle.Equals("Conductor de Tractor") && a.IsAvailable)) { tractor = "images/tractor.png"; }
+			if (work.Assignments.Exists(a => a.JobTitle.Equals("Operario") && a.IsAvailable)) { worker = "images/worker.png"; }
+			if (work.Assignments.Exists(a => a.JobTitle.Equals("Conductor de Camión") && a.IsAvailable)) { truck = "images/truck.png"; }
 
 			if (!work.TaskType.Name.Equals(tempTask))
 			{
