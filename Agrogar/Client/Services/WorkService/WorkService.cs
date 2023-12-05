@@ -39,7 +39,7 @@ namespace Agrogar.Client.Services.WorkService
 
         public async Task<ServiceResponse<int>> Complete(int workId)
         {
-			var result = await _httpClient.PostAsJsonAsync($"api/work/complete/{workId}", workId);
+			var result = await _httpClient.PutAsJsonAsync($"api/work/complete/{workId}", "");
 			var response = await result.Content.ReadFromJsonAsync<ServiceResponse<int>>();
 			return response;
 		}

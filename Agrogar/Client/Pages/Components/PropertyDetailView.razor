@@ -38,8 +38,17 @@
 					</CardHeaderActions>
 				</MudCardHeader>
 				<MudCardContent>
-					<div id="map" style="height:400px;width:500px">
-					</div>
+					
+						@if (LocalizationNotFound)
+						{
+							<img src="images/atencion.png">
+						}
+						else
+						{
+							<div id="map" style="height:400px;width:500px">
+							</div>
+						}
+					
 				</MudCardContent>
 				<div class="centered">
 					<MudCardActions>
@@ -83,6 +92,7 @@
 	private CadasterData cadasterData;
 	bool IsDialogDisabled { get; set; }
 	bool IsSelectedDisabled { get; set; }
+	bool LocalizationNotFound { get; set; }
 	string innerStyle;
 	string outerStyle;
 
@@ -109,7 +119,7 @@
 		bool userSuscribed = dataStorageService.AssignmentApplyWorkDTOs.Any(w => w.Assignments.Any(a => a.UserId == UserId));
 		foreach (var work in dataStorageService.AssignmentApplyWorkDTOs)
 		{
-			
+
 			foreach (var assignment in work.Assignments)
 			{
 				if (assignment.IsAvailable && !userSuscribed)
@@ -133,9 +143,18 @@
 
 			var cadasterDataResponse = await cadasterService.GetCadasterData(property.Province, property.Municipality, property.CadasterReference);
 			cadasterData = cadasterDataResponse;
-			var jsInProcess = (IJSInProcessRuntime)JSRuntime;
-			var value = await jsInProcess.InvokeAsync<string>("init", cadasterData.AxisY, cadasterData.AxisX, cadasterData.Address);
-			StateHasChanged();
+			if (cadasterData.Success)
+			{
+				var jsInProcess = (IJSInProcessRuntime)JSRuntime;
+				var value = await jsInProcess.InvokeAsync<string>("init", cadasterData.AxisY, cadasterData.AxisX, cadasterData.Address);
+				StateHasChanged();
+			}
+			else
+			{
+				LocalizationNotFound = true;
+				StateHasChanged();
+			}
+
 		}
 	}
 

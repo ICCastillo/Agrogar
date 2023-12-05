@@ -1,29 +1,34 @@
 ﻿@inject IDataStorageService dataStorageService
 @inject IPropertyService propertyService
 
-<MudSelect T="string" Label="Categoria" MultiSelection="true" @bind-Value="categoryValue" @bind-SelectedValues="categoryOptions">
-    @foreach (var category in dataStorageService.Categories)
-    {
-        <MudSelectItem T="string" Value="@category.Name">@category.Name</MudSelectItem>
-    }
-</MudSelect>
+<div style="margin:10px">
 
-<MudSelect T="string" Label="Provincia" MultiSelection="true" @bind-Value="provinceValue" @bind-SelectedValues="provinceOptions">
-    @foreach (var province in dataStorageService.ListViewProperties.Select(p => p.Province).Distinct().ToList())
-	{
-		<MudSelectItem T="string" Value="@province">@province</MudSelectItem>
-	}
-</MudSelect>
+    
+    <MudSelect T="string" Label="Provincia" MultiSelection="true" @bind-Value="provinceValue" @bind-SelectedValues="provinceOptions">
+        @foreach (var province in propertyList.Select(p => p.Province).Distinct().ToList())
+        {
+            <MudSelectItem T="string" Value="@province">@province</MudSelectItem>
+        }
+    </MudSelect>
 
-<MudSelect T="string" Label="Municipio" MultiSelection="true" @bind-Value="municipalityValue" @bind-SelectedValues="municipalityOptions">
-    @foreach (var municipality in dataStorageService.ListViewProperties.Select(p => p.Municipality).Distinct().ToList())
-	{
-		<MudSelectItem T="string" Value="@municipality">@municipality</MudSelectItem>
-	}
-</MudSelect>
+    <MudSelect T="string" Label="Municipio" MultiSelection="true" @bind-Value="municipalityValue" @bind-SelectedValues="municipalityOptions">
+        @foreach (var municipality in propertyList.Select(p => p.Municipality).Distinct().ToList())
+        {
+            <MudSelectItem T="string" Value="@municipality">@municipality</MudSelectItem>
+        }
+    </MudSelect>
 
-<MudButton OnClick="ApplyFilter">Aplicar</MudButton>
-<MudButton OnClick="ResetList">Restablecer</MudButton>
+    <MudSelect T="string" Label="Categoria" MultiSelection="true" @bind-Value="categoryValue" @bind-SelectedValues="categoryOptions">
+        @foreach (var category in dataStorageService.Categories)
+        {
+            <MudSelectItem T="string" Value="@category.Name">@category.Name</MudSelectItem>
+        }
+    </MudSelect>
+
+    <MudButton OnClick="ApplyFilter" Style="margin-right: 20px">Aplicar</MudButton>
+    <MudButton OnClick="ResetList">Restablecer</MudButton>
+</div>
+
 
 @code {
     List<PropertyDTO> propertyList { get; set; } = new List<PropertyDTO>();
@@ -45,7 +50,6 @@
     }
 
 
-
     private List<PropertyDTO> FilterProperties<T>(IEnumerable<T> filterValues, Func<PropertyDTO, T, bool> filterCondition, List<PropertyDTO> properties)
     {
         return properties.Where(property => filterValues.Any(filterValue => filterCondition(property, filterValue))).ToList();
@@ -60,25 +64,22 @@
         }
         else
         {
-            var tempProperties = propertyList.ToList();
-            if (filtered)
-            {
-                tempProperties = dataStorageService.ListViewProperties.ToList();
-            }
+            var tempProperties = propertyList;
+            
 
             if (categoryOptions.Count() > 0)
             {
-                filtered = true;
+               
                 tempProperties = FilterProperties(categoryOptions, (property, category) => property.Category.Name.Equals(category), tempProperties);
             }
             if (provinceOptions.Count() > 0)
             {
-                filtered = true;
+               
                 tempProperties = FilterProperties(provinceOptions, (property, province) => property.Province.Equals(province), tempProperties);
             }
             if (municipalityOptions.Count() > 0)
             {
-                filtered = true;
+               
                 tempProperties = FilterProperties(municipalityOptions, (property, municipality) => property.Municipality.Equals(municipality), tempProperties);
             }
             categoryOptions = new HashSet<string>();
@@ -89,7 +90,7 @@
             {
                 dataStorageService.SetFilteredList(tempProperties);
             }
-            filtered = true;
+          
         }
     }
 

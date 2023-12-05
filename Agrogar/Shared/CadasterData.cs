@@ -11,5 +11,6 @@ namespace Agrogar.Shared
         public string AxisY { get;set; }
         public string AxisX { get; set; }
         public string Address { get; set; }
+        public bool Success { get; set; }
     }
 }

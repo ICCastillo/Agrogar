@@ -232,15 +232,20 @@ else
 		}
 		else
 		{
-			var response = await workService.Complete(work.Id);
-			if(response.Success)
+
+			try
 			{
+				var response = await workService.Complete(work.Id);
 				snackBar.Add(response.Message, Severity.Success);
-			}
-			else
+				
+				
+			} 
+			catch(Exception e)
 			{
-				snackBar.Add(response.Message, Severity.Error);
+				snackBar.Add("Hubo un error al completar el trabajo.", Severity.Error);
+				Console.WriteLine(e);
 			}
+			
 		}
 		
 	}

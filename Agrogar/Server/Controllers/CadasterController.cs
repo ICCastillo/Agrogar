@@ -42,6 +42,7 @@ namespace Agrogar.Server.Controllers
             {
                 cadasterData = new CadasterData
                 {
+                    Success = true,
                     AxisX = geo.Element(ns + "xcen")?.Value,
                     AxisY = geo.Element(ns + "ycen")?.Value,
                     Address = ldt.Value

@@ -38,7 +38,7 @@
 			<MudTd DataLabel="Localidad">@context.Work.Property.Municipality</MudTd>
 			<MudTd DataLabel="Trabajo">@context.Work.TaskType.Name</MudTd>
 			<MudTd DataLabel="C. Productos Fitosanitarios">@if (context.LicensePP) { cpfLabel = "Requerido"; } else { cpfLabel = "No requerido"; } @cpfLabel</MudTd>
-				<MudTd DataLabel="Fecha limite">@context.Work.EndDate</MudTd>
+			<MudTd DataLabel="Fecha limite">@context.Work.EndDate</MudTd>
 			<MudTd DataLabel="Completar"><MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Info" Size="Size.Small" OnClick="@(()=> {SetTaskCompleted(@context);})"></MudButton></MudTd>
 		</RowTemplate>
 	</MudTable>
@@ -70,7 +70,7 @@
 		</RowTemplate>
 	</MudTable>
 </div>
-	@code {
+@code {
 	int UserId;
 	bool loading;
 	string cpfLabel;
