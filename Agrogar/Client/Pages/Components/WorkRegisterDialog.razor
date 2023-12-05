@@ -81,7 +81,27 @@
 
 	private async void HandleRegistration()
 	{
-		if(selectedJob.Name != "" && selectedTask != "")
+		bool jobIsValid = true;
+		if(selectedJobs.Count() > 0)
+		{
+			jobIsValid = true;
+		}
+		else
+		{
+			jobIsValid = false;
+			snackbar.Add("Elige un puesto de trabajo", Severity.Error);
+		}
+		bool taskIsValid = true;
+		if(selectedTask.Length > 0)
+		{
+			taskIsValid = true;
+		}
+		else
+		{
+			taskIsValid = false;
+			snackbar.Add("Elige una tarea", Severity.Error);
+		}
+		if (jobIsValid && taskIsValid)
 		{
 			workRegister.PropertyId = property.Id;
 			workRegister.TaskTypeId = tasks.Where(t => t.Name.Equals(selectedTask)).Select(t => t.Id).First();
@@ -89,6 +109,13 @@
 			workRegister.EndDate = (DateTime)dateRange.End;
 			workAssignmentRegisterDTO.Work = workRegister;
 			workAssignmentRegisterDTO.Assignments = new List<AssignmentRegisterDTO>();
+			if(numericFieldValues.Count == 0)
+			{
+				foreach(var job in selectedJobs)
+				{
+					numericFieldValues.Add(job, 1);
+				}
+			}
 			foreach (var job in numericFieldValues.Keys)
 			{
 				AssignmentRegisterDTO assignment = new AssignmentRegisterDTO();
@@ -108,6 +135,7 @@
 			{
 				message = workResult.Message;
 				snackbar.Add(message, Severity.Success);
+				dataStorageService.SetNewWorkToProperty(propertyId, await GetAddedWork());
 			}
 			else
 			{
@@ -115,13 +143,8 @@
 				snackbar.Add(message, Severity.Error);
 			}
 
-			dataStorageService.SetNewWorkToProperty(propertyId, await GetAddedWork());
-			StateHasChanged();
+			
 			MudDialog.Close(DialogResult.Ok(true));
-		}
-		else
-		{
-			snackbar.Add("Se debe elegir al menos una tarea y un puesto de trabajo.", Severity.Error);
 		}
 
 	}

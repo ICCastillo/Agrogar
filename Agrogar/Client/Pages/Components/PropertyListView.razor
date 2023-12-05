@@ -147,7 +147,7 @@
 			if (work.Assignments.Exists(a => a.JobTitle.Equals("Operario") && a.IsAvailable)) { worker = "images/worker.png"; }
 			if (work.Assignments.Exists(a => a.JobTitle.Equals("Conductor de Camión") && a.IsAvailable)) { truck = "images/truck.png"; }
 
-			if (!work.TaskType.Name.Equals(tempTask))
+			if (!work.TaskType.Name.Equals(tempTask) && work.Assignments.Any(a => a.IsAvailable))
 			{
 				assignments += work.TaskType.Name + ", ";
 			}

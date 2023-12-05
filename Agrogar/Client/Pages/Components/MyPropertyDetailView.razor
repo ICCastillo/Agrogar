@@ -20,7 +20,7 @@
 	}
 </style>
 
-@if(dataStorageService.DetailViewProperties.Count() < 0)
+@if (dataStorageService.DetailViewProperties.Count() < 0)
 {
 	<div class="centered">
 		<MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
@@ -28,112 +28,112 @@
 }
 else
 {
-	
 
-<div class="centered">
-	<MudButton OnClick="OpenPropertyRegisterDialog" Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.AddBox" Color="Color.Primary">Registrar parcela</MudButton>
-</div>
-<div class="centered" style="margin-top: 100px">
-	<MudPaper Class="pa-4">
-		<MudTable Items="@dataStorageService.DetailViewProperties" Hover="true" Breakpoint="Breakpoint.Sm" Dense="true">
-			<ColGroup>
-				<col />
-				<col />
-				<col />
-				<col />
-				<col />
-				<col style="width: 200px"/>
-				<col />
-				<col />
-				<col />
-			</ColGroup>
-			<HeaderContent>
-				<MudTh></MudTh>
-				<MudTh>Referencia Catastral</MudTh>
-				<MudTh>Categoria</MudTh>
-				<MudTh>Provincia</MudTh>
-				<MudTh>Municipio</MudTh>
-				<MudTh>Fase</MudTh>
-				<MudTh>Tipo</MudTh>
-				<MudTh>Tamaño</MudTh>
-				<MudTh>Cambiar fase</MudTh>
-			</HeaderContent>
-			<RowTemplate>
-				<MudTd><MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="@(() => ShowBtnPress(context.CadasterReference))">@((context.ShowDetails == true) ? "Ocultar" : "Mostrar") Trabajos</MudButton></MudTd>
-				<MudTd DataLabel="Referencia Catastral">@context.CadasterReference</MudTd>
-				<MudTd DataLabel="Categoria">@context.Category.Name</MudTd>
-				<MudTd DataLabel="Provincia">@context.Province</MudTd>
-				<MudTd DataLabel="Municipio">@context.Municipality</MudTd>
-				<MudTd DataLabel="Fase">@context.WorkPhase.Name</MudTd>
-				<MudTd DataLabel="Tipo">@context.Crop</MudTd>
-				<MudTd DataLabel="Tamaño">@context.Size</MudTd>
-				<MudTd DataLabel="Cambiar fase">
-					<MudButton @onclick="()=>OpenPhaseDialog(context)" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.KeyboardDoubleArrowUp" Color="Color.Info" Size="Size.Small">
-						
-					</MudButton>
-				</MudTd>
-			</RowTemplate>
-			<ChildRowContent>
-				@if (context.ShowDetails)
-				{
-					<MudTr>
-						<td colspan="4">
-							<MudCard Elevation="0">
-								<MudCardHeader>
-									<CardHeaderContent>
-										<MudText Typo="Typo.body1">
-											<MudButton @onclick="()=>OpenWorkRegisterDialog(context)" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.AddBox" Color="Color.Primary" Size="Size.Small">
-												Añadir trabajo
-											</MudButton>
-											<br/>
-										</MudText>
-										<MudText Typo="Typo.body1">
-											Detalles de  <strong>@context.Address</strong>											
-										</MudText>
-									</CardHeaderContent>
-								</MudCardHeader>
-								<MudCardContent Class="pa-0">
-									<MudTable Items="@context.Works" Context="WorksContext" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0">
-										<ColGroup>
-											<col />
-											<col />
-											<col style="width:100px;" />
-											<col />
-											<col />
-											<col style="width:100px;" />
-										</ColGroup>
-										<HeaderContent>
-											<MudTh>Tarea</MudTh>
-											<MudTh>Fecha Comienzo</MudTh>
-											<MudTh>Fecha Final</MudTh>
-											<MudTh>Detalles</MudTh>
-											<MudTh>Activo</MudTh>
-											<MudTh>Completar</MudTh>
-										</HeaderContent>
-										<RowTemplate>
-											<MudTd DataLabel="Tarea">@WorksContext.TaskType.Name</MudTd>
-											<MudTd DataLabel="Fecha Comienzo">@WorksContext.StartDate.ToString("dd/MM/yyyy")</MudTd>
-											<MudTd DataLabel="Fecha Final">@WorksContext.EndDate.ToString("dd/MM/yyyy")</MudTd>
-											<MudTd DataLabel="Detalles">@WorksContext.Details</MudTd>
-											<MudTd DataLabel="Activo">@WorksContext.IsActive</MudTd>
+
+	<div class="centered">
+		<MudButton OnClick="OpenPropertyRegisterDialog" Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.AddBox" Color="Color.Primary">Registrar parcela</MudButton>
+	</div>
+	<div class="centered" style="margin-top: 100px">
+		<MudPaper Class="pa-4">
+			<MudTable Items="@dataStorageService.DetailViewProperties" Hover="true" Breakpoint="Breakpoint.Sm" Dense="true">
+				<ColGroup>
+					<col />
+					<col />
+					<col />
+					<col />
+					<col />
+					<col style="width: 200px" />
+					<col />
+					<col />
+					<col />
+				</ColGroup>
+				<HeaderContent>
+					<MudTh></MudTh>
+					<MudTh>Referencia Catastral</MudTh>
+					<MudTh>Categoria</MudTh>
+					<MudTh>Provincia</MudTh>
+					<MudTh>Municipio</MudTh>
+					<MudTh>Fase</MudTh>
+					<MudTh>Tipo</MudTh>
+					<MudTh>Tamaño</MudTh>
+					<MudTh>Cambiar fase</MudTh>
+				</HeaderContent>
+				<RowTemplate>
+					<MudTd><MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="@(() => ShowBtnPress(context.CadasterReference))">@((context.ShowDetails == true) ? "Ocultar" : "Mostrar") Trabajos</MudButton></MudTd>
+					<MudTd DataLabel="Referencia Catastral">@context.CadasterReference</MudTd>
+					<MudTd DataLabel="Categoria">@context.Category.Name</MudTd>
+					<MudTd DataLabel="Provincia">@context.Province</MudTd>
+					<MudTd DataLabel="Municipio">@context.Municipality</MudTd>
+					<MudTd DataLabel="Fase">@context.WorkPhase.Name</MudTd>
+					<MudTd DataLabel="Tipo">@context.Crop</MudTd>
+					<MudTd DataLabel="Tamaño">@context.Size</MudTd>
+					<MudTd DataLabel="Cambiar fase">
+						<MudButton @onclick="()=>OpenPhaseDialog(context)" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.KeyboardDoubleArrowUp" Color="Color.Info" Size="Size.Small">
+
+						</MudButton>
+					</MudTd>
+				</RowTemplate>
+				<ChildRowContent>
+					@if (context.ShowDetails)
+					{
+						<MudTr>
+							<td colspan="4">
+								<MudCard Elevation="0">
+									<MudCardHeader>
+										<CardHeaderContent>
+											<MudText Typo="Typo.body1">
+												<MudButton @onclick="()=>OpenWorkRegisterDialog(context)" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.AddBox" Color="Color.Primary" Size="Size.Small">
+													Añadir trabajo
+												</MudButton>
+												<br />
+											</MudText>
+											<MudText Typo="Typo.body1">
+												Detalles de  <strong>@context.Address</strong>
+											</MudText>
+										</CardHeaderContent>
+									</MudCardHeader>
+									<MudCardContent Class="pa-0">
+										<MudTable Items="@context.Works" Context="WorksContext" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0">
+											<ColGroup>
+												<col />
+												<col />
+												<col style="width:100px;" />
+												<col />
+												<col />
+												<col style="width:100px;" />
+											</ColGroup>
+											<HeaderContent>
+												<MudTh>Tarea</MudTh>
+												<MudTh>Fecha Comienzo</MudTh>
+												<MudTh>Fecha Final</MudTh>
+												<MudTh>Detalles</MudTh>
+												<MudTh>Activo</MudTh>
+												<MudTh>Completar</MudTh>
+											</HeaderContent>
+											<RowTemplate>
+												<MudTd DataLabel="Tarea">@WorksContext.TaskType.Name</MudTd>
+												<MudTd DataLabel="Fecha Comienzo">@WorksContext.StartDate.ToString("dd/MM/yyyy")</MudTd>
+												<MudTd DataLabel="Fecha Final">@WorksContext.EndDate.ToString("dd/MM/yyyy")</MudTd>
+												<MudTd DataLabel="Detalles">@WorksContext.Details</MudTd>
+												<MudTd DataLabel="Activo">@WorksContext.IsActive</MudTd>
 												<MudTd DataLabel="Activo">
 													<MudButton @onclick="()=>CompleteWork(WorksContext)" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.AddBox" Color="Color.Primary" Size="Size.Small">
 														Completar
 													</MudButton>
 												</MudTd>
-										</RowTemplate>
-									</MudTable>
-								</MudCardContent>
-							</MudCard>
-						</td>
-					</MudTr>
-					<br/>
-				}
-			</ChildRowContent>
-		</MudTable>
-	</MudPaper>
+											</RowTemplate>
+										</MudTable>
+									</MudCardContent>
+								</MudCard>
+							</td>
+						</MudTr>
+						<br />
+					}
+				</ChildRowContent>
+			</MudTable>
+		</MudPaper>
 
-</div>
+	</div>
 
 }
 
@@ -190,7 +190,7 @@ else
 	{
 		bool hasActiveWorks = false;
 		var works = dataStorageService.DetailViewProperties.Find(p => p.Id.Equals(property.Id)).Works;
-		foreach(var work in works)
+		foreach (var work in works)
 		{
 			if (work.IsActive)
 			{
@@ -226,7 +226,7 @@ else
 
 	private async Task CompleteWork(WorkDTO work)
 	{
-		if(work.Assignments.Any(a => a.IsAvailable))
+		if (work.Assignments.Any(a => a.IsAvailable))
 		{
 			snackBar.Add("Hay tareas por terminar.", Severity.Error);
 		}
@@ -237,16 +237,16 @@ else
 			{
 				var response = await workService.Complete(work.Id);
 				snackBar.Add(response.Message, Severity.Success);
-				
-				
-			} 
-			catch(Exception e)
+
+
+			}
+			catch (Exception e)
 			{
 				snackBar.Add("Hubo un error al completar el trabajo.", Severity.Error);
 				Console.WriteLine(e);
 			}
-			
+
 		}
-		
+
 	}
 }

@@ -87,7 +87,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        
+
         workPhaseList = dataStorageService.WorkPhasesAndTasks.Keys.ToList();
         categoryList = dataStorageService.Categories;
         var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
@@ -100,7 +100,37 @@
 
     async Task HandleRegistration()
     {
-        if (selectedCategory.Length > 0 && selectedWorkPhase.Length > 0 && property.Size > 0)
+        bool sizeIsValid = true;
+        if(property.Size > 0)
+        {
+            sizeIsValid = true;
+        }
+        else
+        {
+            sizeIsValid = false;
+            snackbar.Add("Indica un tamaño correcto", Severity.Error);
+        }
+        bool categoryIsValid = true;
+        if(selectedCategory.Length > 0)
+        {
+            categoryIsValid = true;
+        }
+        else
+        {
+            categoryIsValid = false;
+            snackbar.Add("Selecciona una categoria", Severity.Error);
+        }
+        bool workPhaseIsValid = true;
+        if(selectedWorkPhase.Length > 0)
+        {
+            workPhaseIsValid = true;
+        }
+        else
+        {
+            workPhaseIsValid = false;
+            snackbar.Add("Selecciona una fase de trabajo", Severity.Error);
+        }
+        if (sizeIsValid && categoryIsValid && workPhaseIsValid)
         {
             await form.Validate();
             if (form.IsValid)
@@ -126,10 +156,6 @@
                 MudDialog.Close(DialogResult.Ok(property));
                 StateHasChanged();
             }
-        }
-        else
-        {
-            snackbar.Add("Debe seleccionar una categoria, la fase del cultivo y el tamaño.", Severity.Error);
         }
 
     }

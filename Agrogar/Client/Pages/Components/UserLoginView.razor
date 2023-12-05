@@ -37,9 +37,6 @@
 								  InputType="InputType.Password"
 								  Validation="@(new Func<string, IEnumerable<string>>(PasswordStrength))" Required="true"
 								  RequiredError="Password is required!" @bind-Value="@userLoginDTO.Password" />
-					<MudTextField T="string"
-								  Label="Password" HelperText="Repeat the password" InputType="InputType.Password"
-								  Validation="@(new Func<string, string>(PasswordMatch))" />
 					<div class="mt-2" style="text-align:center">
 						<MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!success)" Class="ml-auto" @onclick="HandleLogin">Iniciar Sesión</MudButton>
 					</div>

@@ -54,10 +54,15 @@
 					<MudCardActions>
 						<div>
 							<div class="mb-3" style="width: 200px">
+								
 								<MudSelect T="WorkDTO" Label="Trabajos" AnchorOrigin="Origin.BottomCenter" ValueChanged="SelectWork" AdornmentAriaLabel="LOL" Disabled="IsSelectedDisabled">
 									@foreach (var work in works.Where(w => w.Assignments.Any(a => a.IsAvailable)))
 									{
-										<MudSelectItem T="WorkDTO" Value="@work">@work.TaskType.Name</MudSelectItem>
+										<MudSelectItem T="WorkDTO" Value="@work">@if (works.Count() != 0)
+											{
+												@work.TaskType.Name
+											}
+											else { @selectLabel }</MudSelectItem>
 									}
 								</MudSelect>
 							</div>
@@ -93,11 +98,14 @@
 	bool IsDialogDisabled { get; set; }
 	bool IsSelectedDisabled { get; set; }
 	bool LocalizationNotFound { get; set; }
+
 	string innerStyle;
 	string outerStyle;
+	string selectLabel;
 
 	protected override async Task OnParametersSetAsync()
 	{
+		selectLabel = "Trabajos";
 		dataStorageService.OnChange += StateHasChanged;
 		if (property.UserId == UserId)
 		{
@@ -117,6 +125,7 @@
 		IsDialogDisabled = true;
 		IsSelectedDisabled = true;
 		bool userSuscribed = dataStorageService.AssignmentApplyWorkDTOs.Any(w => w.Assignments.Any(a => a.UserId == UserId));
+		
 		foreach (var work in dataStorageService.AssignmentApplyWorkDTOs)
 		{
 
@@ -129,6 +138,7 @@
 				}
 			}
 		}
+		
 	}
 
 	private void Dispose()

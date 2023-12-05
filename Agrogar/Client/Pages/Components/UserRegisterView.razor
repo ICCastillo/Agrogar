@@ -35,12 +35,11 @@
 		<MudForm Model="@user" @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
 			<MudTextField T="string" Label="Nombre" Required="true" RequiredError="El nombre es obligatorio!"
 						  Validation="@(new{ErrorMessage = "El nombre es obligatorio"})" @bind-Value="@user.Name" />
-
-			<MudTextField T="string" Label="Teléfono" Required="true" RequiredError="El Teléfono es obligatorio!"
-						  Validation="@(new{ErrorMessage = "El Teléfono es obligatorio"})" @bind-Value="@user.PhoneNumber" />
-
 			<MudTextField T="string" Label="Email" Required="true" RequiredError="El Teléfono es obligatorio!"
 						  Validation="@(new EmailAddressAttribute() {ErrorMessage = "El correo no es valido"})" @bind-Value="@user.Email" />
+
+			<MudTextField T="string" Label="Teléfono" Required="true" RequiredError="El Teléfono es obligatorio!"
+						  Validation="@(new{ErrorMessage = "El Teléfono es obligatorio"})" @bind-Value="@user.PhoneNumber" /> 
 
 			<MudTextField T="string" Label="Password" HelperText="Choose a strong password" @ref="pwField1" InputType="InputType.Password"
 						  Validation="@(new Func<string, IEnumerable<string>>(PasswordStrength))" Required="true"

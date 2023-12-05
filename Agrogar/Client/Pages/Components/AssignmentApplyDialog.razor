@@ -6,11 +6,14 @@
 <MudDialog>
 	<TitleContent><h3>Solicitud para @work.TaskType.Name</h3></TitleContent>
 	<DialogContent>
-		<MudSelect T="int" Label="Puesto de trabajo" AnchorOrigin="Origin.BottomCenter" Style="width: 200px" @bind-Value="SelectedOption">
+		@if (needsCPF)
+		{
+			<MudText>Requiere carnet de productos fitosanitarios</MudText>
+		}
+		<MudSelect T="int" Label="Puesto de trabajo" AnchorOrigin="Origin.BottomCenter" Style="width: 200px" @bind-Value="SelectedOption" Disabled="selectDisabled">
 
 			@foreach (var assignment in assignments.Distinct().ToList())
 			{
-
 				<MudSelectItem Value="@assignment.Id">@assignment.JobTitle</MudSelectItem>
 			}
 		</MudSelect>
@@ -28,8 +31,8 @@
 	WorkDTO work { get; set; } = new WorkDTO();
 	List<AssignmentDTO> assignments { get; set; } = new List<AssignmentDTO>();
 	public int SelectedOption { get; set; }
-
-
+	bool needsCPF { get; set; }
+	bool selectDisabled { get; set; } = false;
 
 
 	protected override async Task OnInitializedAsync()
@@ -38,8 +41,7 @@
 		work = dataStorageService.WorkDTO;
 		var userResult = await authService.GetUser(UserId);
 		var user = userResult.Data;
-
-
+		needsCPF = work.Assignments.Any(a => a.LicensePP);
 		foreach (var assignment in work.Assignments)
 		{
 			if (assignment.LicensePP)
@@ -55,33 +57,46 @@
 				assignments.Add(assignment);
 			}
 		}
+		if (assignments.Count == 0)
+		{
+			selectDisabled = true;
+		}
 	}
 
 	async Task Submit()
 	{
-
-		var result = await assignmentService.Update(SelectedOption, UserId);
-		if (result.Success)
+		if (SelectedOption != 0)
 		{
-			snackbar.Add(result.Message, Severity.Success);
-			var assignment = assignments.FirstOrDefault(a => a.Id == SelectedOption);
-			assignments.Remove(assignment);
+
+			var result = await assignmentService.Update(SelectedOption, UserId);
+			if (result.Success)
+			{
+				snackbar.Add(result.Message, Severity.Success);
+				var assignment = assignments.FirstOrDefault(a => a.Id == SelectedOption);
+				assignments.Remove(assignment);
+			}
+			else
+			{
+				snackbar.Add(result.Message, Severity.Error);
+			}
+			var assignmentLocalUpdate = dataStorageService.AssignmentApplyWorkDTOs
+		.Where(w => w.Id == work.Id)
+		.Select(w => w.Assignments)
+		.First()
+		.FirstOrDefault(a => a.Id == SelectedOption);
+
+			if (assignmentLocalUpdate != null)
+			{
+				assignmentLocalUpdate.IsAvailable = false;
+			}
+			MudDialog.Close(DialogResult.Ok(true));
 		}
 		else
 		{
-			snackbar.Add(result.Message, Severity.Error);
+			snackbar.Add("Debes seleccionar un puesto de trabajo", Severity.Error);
 		}
-		var assignmentLocalUpdate = dataStorageService.AssignmentApplyWorkDTOs
-	.Where(w => w.Id == work.Id)
-	.Select(w => w.Assignments)
-	.First()
-	.FirstOrDefault(a => a.Id == SelectedOption);
 
-		if (assignmentLocalUpdate != null)
-		{
-			assignmentLocalUpdate.IsAvailable = false;
-		}
-		MudDialog.Close(DialogResult.Ok(true));
+
 	}
 	void Cancel() => MudDialog.Cancel();
 

@@ -28,16 +28,40 @@
 
     async Task Submit() 
     {
-        var response = await assignmentService.Complete(assignment.Id,workedHours,comments);
-        if (response.Success)
+        bool sizeIsValid = true;
+        if (workedHours > 0)
+        {
+            sizeIsValid = true;
+        }
+        else
+        {
+            sizeIsValid = false;
+            snackbar.Add("Debes introducir las horas trabajadas", Severity.Error);
+        }
+        bool commentsIsValid = true;
+        if (comments.Length > 0)
 		{
-			snackbar.Add(response.Message, Severity.Success);
+			commentsIsValid = true;
 		}
 		else
 		{
-			snackbar.Add(response.Message, Severity.Error);
+			commentsIsValid = false;
+			snackbar.Add("Debes comentar el trabajo", Severity.Error);
 		}
-        MudDialog.Close(DialogResult.Ok(true)); 
+        if (sizeIsValid && commentsIsValid)
+        {
+            var response = await assignmentService.Complete(assignment.Id, workedHours, comments);
+            if (response.Success)
+            {
+                snackbar.Add(response.Message, Severity.Success);
+            }
+            else
+            {
+                snackbar.Add(response.Message, Severity.Error);
+            }
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        
     }
 
     void Cancel() => MudDialog.Cancel();
