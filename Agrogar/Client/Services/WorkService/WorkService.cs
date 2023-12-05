@@ -36,5 +36,12 @@ namespace Agrogar.Client.Services.WorkService
             var response = await result.Content.ReadFromJsonAsync<ServiceResponse<int>>();
             return response;
         }
+
+        public async Task<ServiceResponse<int>> Complete(int workId)
+        {
+			var result = await _httpClient.PostAsJsonAsync($"api/work/complete/{workId}", workId);
+			var response = await result.Content.ReadFromJsonAsync<ServiceResponse<int>>();
+			return response;
+		}
     }
 }

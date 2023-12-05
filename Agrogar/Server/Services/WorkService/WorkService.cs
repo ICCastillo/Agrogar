@@ -58,6 +58,13 @@ namespace Agrogar.Server.Services.WorkService
 			return new ServiceResponse<int> { Data = work.Id, Success = true, Message = "El trabajo se registro correctamente." };
 		}
 
+		public async Task<ServiceResponse<int>> Complete(int workId)
+		{
+			_context.Works.FirstOrDefault(w => w.Id == workId).IsActive = false;
+			await _context.SaveChangesAsync();
+			return new ServiceResponse<int> { Data = workId, Success = true, Message = "El trabajo se completo correctamente." };
+		}
+
 		public async Task<bool> WorkExists(Work work)
 		{
 			bool exists = await _context.Works.AnyAsync(w => w.PropertyId == work.PropertyId && w.TaskTypeId == work.TaskTypeId);

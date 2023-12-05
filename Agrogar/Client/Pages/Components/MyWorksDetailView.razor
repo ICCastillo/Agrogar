@@ -6,93 +6,108 @@
 @inject IDataStorageService dataStorageService
 
 <style>
-    .pa-4 {
-        background-color: rgba(255, 255, 255, 0.75);
-        backdrop-filter: blur(20px);
-    }
+	.pa-4 {
+		background-color: rgba(255, 255, 255, 0.75);
+		backdrop-filter: blur(20px);
+	}
 
-    .centered {
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-    }
+	.centered {
+		display: flex;
+		justify-content: center;
+		align-items: flex-start;
+	}
 </style>
 
-<div class="mb-5 centered">
-<MudTable Items="@dataStorageService.MyWorksAssignments.Where(a => !a.IsCompleted)" Hover="true" Breakpoint="Breakpoint.Sm" LoadingProgressColor="Color.Info">
-    <HeaderContent>
-        <MudTh>Parcela</MudTh>
-        <MudTh>Trabajo</MudTh>
-        <MudTh>Licencias</MudTh>
-        <MudTh>Fecha limite</MudTh>
-        <MudTh>Completar</MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd DataLabel="Parcela">@context.Work.Property.CadasterReference</MudTd>
-        <MudTd DataLabel="Trabajo">@context.Work.TaskType.Name</MudTd>
-        <MudTd DataLabel="C. Productos Fitosanitarios">@context.LicensePP ? "Requerido":"No requerido"</MudTd>
-        <MudTd DataLabel="Fecha limite">@context.Work.EndDate</MudTd>
-        <MudTd DataLabel="Completar"><MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Info" Size="Size.Small" OnClick="@(()=> {SetTaskCompleted(@context);})"></MudButton></MudTd>
-    </RowTemplate>
-</MudTable>
+<div class="centered">
+	<MudPaper Class="pa-4 mb-1" Style="text-align:center; width:900px">
+		<h4 class="mt-2">Trabajos inscritos</h4>
+	</MudPaper>
 </div>
-<div class="mt-5 centered">
-<MudTable Items="@dataStorageService.MyWorksAssignments.Where(a => a.IsCompleted)" Hover="true" Breakpoint="Breakpoint.Sm" LoadingProgressColor="Color.Info">
-    <HeaderContent>
-        <MudTh>Parcela</MudTh>
-        <MudTh>Trabajo</MudTh>
-        <MudTh>Licencias</MudTh>
-        <MudTh>Fecha Completado</MudTh>
-        <MudTh>Comentarios</MudTh>
-        <MudTh>Horas trabajadas</MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd DataLabel="Parcela">@context.Work.Property.CadasterReference</MudTd>
-        <MudTd DataLabel="Trabajo">@context.Work.TaskType.Name</MudTd>
-        <MudTd DataLabel="C. Productos Fitosanitarios">@context.LicensePP ? "Requerido":"No requerido"</MudTd>
-        <MudTd DataLabel="Fecha limite">@context.DateCompleted</MudTd>
-        <MudTd DataLabel="Comentarios">@context.Comments</MudTd>
-        <MudTd DataLabel="Horas trabajadas">@context.WorkedHours</MudTd>
-    </RowTemplate>
-</MudTable>
+<div class="mb-5 mt-1 centered">
+	<MudTable Items="@dataStorageService.MyWorksAssignments.Where(a => !a.IsCompleted)" Hover="true" Breakpoint="Breakpoint.Sm" LoadingProgressColor="Color.Info" Style="width: 900px">
+		<HeaderContent>
+			<MudTh>Parcela</MudTh>
+			<MudTh>Localidad</MudTh>
+			<MudTh>Trabajo</MudTh>
+			<MudTh>Licencias</MudTh>
+			<MudTh>Fecha limite</MudTh>
+			<MudTh>Completar</MudTh>
+		</HeaderContent>
+		<RowTemplate>
+			<MudTd DataLabel="Parcela">@context.Work.Property.CadasterReference</MudTd>
+			<MudTd DataLabel="Localidad">@context.Work.Property.Municipality</MudTd>
+			<MudTd DataLabel="Trabajo">@context.Work.TaskType.Name</MudTd>
+			<MudTd DataLabel="C. Productos Fitosanitarios">@if (context.LicensePP) { cpfLabel = "Requerido"; } else { cpfLabel = "No requerido"; } @cpfLabel</MudTd>
+				<MudTd DataLabel="Fecha limite">@context.Work.EndDate</MudTd>
+			<MudTd DataLabel="Completar"><MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Info" Size="Size.Small" OnClick="@(()=> {SetTaskCompleted(@context);})"></MudButton></MudTd>
+		</RowTemplate>
+	</MudTable>
 </div>
-@code {
-    int UserId;
-    bool loading;
-    protected override async Task OnInitializedAsync()
-    {
-        dataStorageService.OnChange += StateHasChanged;
-        var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-        if (user.Identity.IsAuthenticated)
-        {
-            UserId = int.Parse(authState.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-        }
+<div class="centered" style="margin-top: 100px">
+	<MudPaper Class="pa-4 mb-1" Style="text-align:center; width:900px">
+		<h4 class="mt-2">Trabajos completados</h4>
+	</MudPaper>
+</div>
+<div class="mt-1 centered">
+	<MudTable Items="@dataStorageService.MyWorksAssignments.Where(a => a.IsCompleted)" Hover="true" Breakpoint="Breakpoint.Sm" LoadingProgressColor="Color.Info" Style="width: 900px">
+		<HeaderContent>
+			<MudTh>Parcela</MudTh>
+			<MudTh>Localidad</MudTh>
+			<MudTh>Trabajo</MudTh>
+			<MudTh>Licencias</MudTh>
+			<MudTh>Fecha Completado</MudTh>
+			<MudTh>Comentarios</MudTh>
+			<MudTh>Horas trabajadas</MudTh>
+		</HeaderContent>
+		<RowTemplate>
+			<MudTd DataLabel="Parcela">@context.Work.Property.CadasterReference</MudTd>
+			<MudTd DataLabel="Localidad">@context.Work.Property.Municipality</MudTd>
+			<MudTd DataLabel="Trabajo">@context.Work.TaskType.Name</MudTd>
+			<MudTd DataLabel="C. Productos Fitosanitarios">@if (context.LicensePP) { cpfLabel = "Requerido"; } else { cpfLabel = "No requerido"; } @cpfLabel</MudTd>
+			<MudTd DataLabel="Fecha limite">@context.DateCompleted.Value.ToString("dd/MM/yyyy")</MudTd>
+			<MudTd DataLabel="Comentarios">@context.Comments</MudTd>
+			<MudTd DataLabel="Horas trabajadas">@context.WorkedHours</MudTd>
+		</RowTemplate>
+	</MudTable>
+</div>
+	@code {
+	int UserId;
+	bool loading;
+	string cpfLabel;
+	protected override async Task OnInitializedAsync()
+	{
+		dataStorageService.OnChange += StateHasChanged;
+		var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+		var user = authState.User;
+		if (user.Identity.IsAuthenticated)
+		{
+			UserId = int.Parse(authState.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+		}
 
-        var assignmentsResult = await assignmentService.GetAssignmentsByUserId(UserId);
-        List<AssignmentDTO> assignments = new List<AssignmentDTO>();
-        foreach (var assignment in assignmentsResult.Data)
-        {
-            var workResult = await workService.GetWork(assignment.WorkId);
-            var work = workResult.Data;
-            var propertyResult = await propertyService.GetProperty(work.PropertyId);
-            work.Property = propertyResult.Data;
-            assignment.Work = work;
-            assignments.Add(assignment);
-        }
-        dataStorageService.SetAssignmentToMyWorks(assignments);
-    }
+		var assignmentsResult = await assignmentService.GetAssignmentsByUserId(UserId);
+		List<AssignmentDTO> assignments = new List<AssignmentDTO>();
+		foreach (var assignment in assignmentsResult.Data)
+		{
+			var workResult = await workService.GetWork(assignment.WorkId);
+			var work = workResult.Data;
+			var propertyResult = await propertyService.GetProperty(work.PropertyId);
+			work.Property = propertyResult.Data;
+			assignment.Work = work;
+			assignments.Add(assignment);
+		}
+		dataStorageService.SetAssignmentToMyWorks(assignments);
+	}
 
-    private void Dispose()
+	private void Dispose()
 	{
 		dataStorageService.OnChange -= StateHasChanged;
 	}
 
 
-    private void SetTaskCompleted(AssignmentDTO assignment)
-    {
-        dataStorageService.AssignmentDTO = assignment;
-        DialogOptions closeOnEscapeKey = new DialogOptions() { CloseOnEscapeKey = true };
-        dialogService.Show<CompletedTaskDialog>("Completar trabajo", closeOnEscapeKey);
-    }
+	private void SetTaskCompleted(AssignmentDTO assignment)
+	{
+		dataStorageService.AssignmentDTO = assignment;
+		DialogOptions closeOnEscapeKey = new DialogOptions() { CloseOnEscapeKey = true };
+		dialogService.Show<CompletedTaskDialog>("Completar trabajo", closeOnEscapeKey);
+	}
 }

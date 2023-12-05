@@ -108,6 +108,7 @@ else
 											<MudTh>Fecha Final</MudTh>
 											<MudTh>Detalles</MudTh>
 											<MudTh>Activo</MudTh>
+											<MudTh>Completar</MudTh>
 										</HeaderContent>
 										<RowTemplate>
 											<MudTd DataLabel="Tarea">@WorksContext.TaskType.Name</MudTd>
@@ -115,6 +116,11 @@ else
 											<MudTd DataLabel="Fecha Final">@WorksContext.EndDate.ToString("dd/MM/yyyy")</MudTd>
 											<MudTd DataLabel="Detalles">@WorksContext.Details</MudTd>
 											<MudTd DataLabel="Activo">@WorksContext.IsActive</MudTd>
+												<MudTd DataLabel="Activo">
+													<MudButton @onclick="()=>CompleteWork(WorksContext)" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.AddBox" Color="Color.Primary" Size="Size.Small">
+														Completar
+													</MudButton>
+												</MudTd>
 										</RowTemplate>
 									</MudTable>
 								</MudCardContent>
@@ -138,7 +144,7 @@ else
 	protected override async Task OnInitializedAsync()
 	{
 		dataStorageService.OnChange += StateHasChanged;
-		
+
 		var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
 		var user = authState.User;
 		if (user.Identity.IsAuthenticated)
@@ -216,5 +222,26 @@ else
 	{
 		DialogOptions closeOnEscapeKey = new DialogOptions() { CloseOnEscapeKey = true };
 		dialogService.Show<PropertyRegisterDialog>("Registrar propiedad", closeOnEscapeKey);
+	}
+
+	private async Task CompleteWork(WorkDTO work)
+	{
+		if(work.Assignments.Any(a => a.IsAvailable))
+		{
+			snackBar.Add("Hay tareas por terminar.", Severity.Error);
+		}
+		else
+		{
+			var response = await workService.Complete(work.Id);
+			if(response.Success)
+			{
+				snackBar.Add(response.Message, Severity.Success);
+			}
+			else
+			{
+				snackBar.Add(response.Message, Severity.Error);
+			}
+		}
+		
 	}
 }

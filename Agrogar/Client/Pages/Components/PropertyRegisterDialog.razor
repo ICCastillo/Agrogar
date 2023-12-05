@@ -63,7 +63,7 @@
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">Cancelar</MudButton>
-        <MudButton Color="Color.Primary" OnClick="HandleRegistration">Aceptar</MudButton>
+        <MudButton Color="Color.Primary" OnClick="HandleRegistration" >Aceptar</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -81,12 +81,13 @@
     MudTextField<string> pwField1 = new MudTextField<string>();
     MudForm form = new MudForm();
     readonly Func<Category, string> converter = p => p.Id.ToString();
-    string selectedCategory { get; set; } = string.Empty;
-    string selectedWorkPhase { get; set; } = string.Empty;
+    string selectedCategory { get; set; } = "";
+    string selectedWorkPhase { get; set; } = "";
 
 
     protected override async Task OnInitializedAsync()
     {
+        
         workPhaseList = dataStorageService.WorkPhasesAndTasks.Keys.ToList();
         categoryList = dataStorageService.Categories;
         var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
@@ -99,31 +100,38 @@
 
     async Task HandleRegistration()
     {
-        await form.Validate();
-        if (form.IsValid)
+        if (selectedCategory.Length > 0 && selectedWorkPhase.Length > 0 && property.Size > 0)
         {
-            PickFromSelects();
-            property.UserId = UserId;
-            var result = await propertyService.Register(property);
-            var message = result.Message;
-            if (result.Success)
+            await form.Validate();
+            if (form.IsValid)
             {
-                message = result.Message;
-                snackbar.Add(message, Severity.Success);
-            }
-            else
-            {
-                message = result.Message;
-                snackbar.Add(message, Severity.Error);
-            }
+                PickFromSelects();
+                property.UserId = UserId;
+                var result = await propertyService.Register(property);
+                var message = result.Message;
+                if (result.Success)
+                {
+                    message = result.Message;
+                    snackbar.Add(message, Severity.Success);
+                }
+                else
+                {
+                    message = result.Message;
+                    snackbar.Add(message, Severity.Error);
+                }
 
-            var lastPropertyResult = await propertyService.GetProperties();
-            var lastProperty = lastPropertyResult.Data.Last();
-            dataStorageService.SetNewProperty(lastProperty);
-            MudDialog.Close(DialogResult.Ok(property));
-            StateHasChanged();
+                var lastPropertyResult = await propertyService.GetProperties();
+                var lastProperty = lastPropertyResult.Data.Last();
+                dataStorageService.SetNewProperty(lastProperty);
+                MudDialog.Close(DialogResult.Ok(property));
+                StateHasChanged();
+            }
         }
-        
+        else
+        {
+            snackbar.Add("Debe seleccionar una categoria, la fase del cultivo y el tamaño.", Severity.Error);
+        }
+
     }
 
     private IEnumerable<string> PasswordStrength(string pw)

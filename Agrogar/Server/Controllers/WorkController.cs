@@ -69,5 +69,17 @@ namespace Agrogar.Server.Controllers
 
 			return Ok(response);
 		}
+
+		[HttpPut("complete/{workId}")]
+		public async Task<ActionResult<ServiceResponse<int>>> Complete(int workId)
+		{
+			var response = await _workService.Complete(workId);
+			if (!response.Success)
+			{
+				return BadRequest(response);
+			}
+
+			return Ok(response);
+		}
 	}
 }
